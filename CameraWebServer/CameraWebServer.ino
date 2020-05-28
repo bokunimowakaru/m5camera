@@ -8,18 +8,24 @@
 //
 
 // Select camera model
-#define CAMERA_MODEL_WROVER_KIT // Has PSRAM
+//#define CAMERA_MODEL_WROVER_KIT // Has PSRAM
 //#define CAMERA_MODEL_ESP_EYE // Has PSRAM
 //#define CAMERA_MODEL_M5STACK_PSRAM // Has PSRAM
 //#define CAMERA_MODEL_M5STACK_V2_PSRAM // M5Camera version B Has PSRAM
 //#define CAMERA_MODEL_M5STACK_WIDE	// Has PSRAM
 //#define CAMERA_MODEL_AI_THINKER // Has PSRAM
 //#define CAMERA_MODEL_TTGO_T_JOURNAL // No PSRAM
+//#define CAMERA_MODEL_TTGO_T_CAMERA
+#define CAMERA_MODEL_TTGO_T_CAMERA_V16
 
 #include "camera_pins.h"
 
-const char* ssid = "*********";
-const char* password = "*********";
+
+/***************************************
+ *  WiFi
+ **************************************/
+#define WIFI_SSID   "1234ABCD"          // your wifi ssid
+#define WIFI_PASSWD "password"          // your wifi password
 
 void startCameraServer();
 
@@ -27,6 +33,7 @@ void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
   Serial.println();
+  Serial.println("M5Camera started");
 
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
@@ -62,7 +69,7 @@ void setup() {
     config.fb_count = 1;
   }
 
-#if defined(CAMERA_MODEL_ESP_EYE)
+#if defined(CAMERA_MODEL_ESP_EYE) || defined(CAMERA_MODEL_TTGO_T_CAMERA_V16)
   pinMode(13, INPUT_PULLUP);
   pinMode(14, INPUT_PULLUP);
 #endif
@@ -73,6 +80,7 @@ void setup() {
     Serial.printf("Camera init failed with error 0x%x", err);
     return;
   }
+  Serial.println("OV2640 started");
 
   sensor_t * s = esp_camera_sensor_get();
   // initial sensors are flipped vertically and colors are a bit saturated
@@ -84,13 +92,16 @@ void setup() {
   // drop down frame size for higher initial frame rate
   s->set_framesize(s, FRAMESIZE_QVGA);
 
-#if defined(CAMERA_MODEL_M5STACK_WIDE)
+#if defined(CAMERA_MODEL_M5STACK_WIDE) || defined(CAMERA_MODEL_TTGO_T_CAMERA_V16) || defined(CAMERA_MODEL_TTGO_T_CAMERA_V16)
   s->set_vflip(s, 1);
   s->set_hmirror(s, 1);
 #endif
 
-  WiFi.begin(ssid, password);
+  Serial.println("Starting Wi-Fi");
+  delay(100);
 
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWD);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
