@@ -1,5 +1,6 @@
 #include "esp_camera.h"
 #include <WiFi.h>
+#include <WiFiUdp.h>                    // UDP通信を行うライブラリ
 
 //
 // WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
@@ -21,13 +22,31 @@
 #include "camera_pins.h"
 
 
-/***************************************
- *  WiFi
- **************************************/
+/******************************************************************************
+ *  WiFi 下記にゲートウェイのWi-Fi設定を入力してください
+ *****************************************************************************/
 #define WIFI_SSID   "1234ABCD"          // your wifi ssid
 #define WIFI_PASSWD "password"          // your wifi password
 
+#define SENDTO "255.255.255.255"        // UDP送信先IPアドレス
+#define PORT 1024                       // UDP送信先ポート番号
+#define DEVICE_CAM "cam_a_5,"           // デバイス名(カメラ)
+
 void startCameraServer();
+int8_t udp_sender_enabled = 1;
+int8_t ftp_sender_enabled = 0;
+int16_t send_interval = 60;
+String ip;
+
+void sendUdp_Ident(){
+    WiFiUDP udp;                            // UDP通信用のインスタンスを定義
+    String S = String(DEVICE_CAM) + String(0) + ", http://" + ip + "/cam.jpg";
+    udp.beginPacket(SENDTO, PORT);          // UDP送信先を設定
+    udp.println(S);
+    udp.endPacket();                        // UDP送信の終了(実際に送信する)
+    Serial.println(S);
+    delay(200);                             // 送信待ち時間
+}
 
 void setup() {
   Serial.begin(115200);
@@ -106,17 +125,25 @@ void setup() {
     delay(500);
     Serial.print(".");
   }
+  ip = WiFi.localIP().toString();
   Serial.println("");
   Serial.println("WiFi connected");
 
   startCameraServer();
 
   Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
+  Serial.print(ip);
   Serial.println("' to connect");
+  sendUdp_Ident();
 }
 
+int send_c = 0;
 void loop() {
-  // put your main code here, to run repeatedly:
-  delay(10000);
+  Serial.printf("count:%d, udp:%d, ftp:%d, interval:%d\n",send_c,udp_sender_enabled,ftp_sender_enabled,send_interval);
+  if(send_c >= send_interval){
+    sendUdp_Ident();
+    send_c = 0;
+  }
+  delay(1000);
+  send_c++;
 }

@@ -15,7 +15,11 @@
 #include "esp_timer.h"
 #include "esp_camera.h"
 #include "img_converters.h"
-#include "camera_index.h"
+
+// 圧縮した HTML ファイル
+//#include "camera_index.h"
+#include "camera_index_ov2640.h"
+//#include "camera_index_ov3660.h"
 #include "Arduino.h"
 
 #include "fb_gfx.h"
@@ -60,6 +64,9 @@ static mtmn_config_t mtmn_config = {0};
 static int8_t detection_enabled = 0;
 static int8_t recognition_enabled = 0;
 static int8_t is_enrolling = 0;
+extern int8_t udp_sender_enabled;
+extern int8_t ftp_sender_enabled;
+extern int16_t send_interval;
 static face_id_list id_list = {0};
 
 static ra_filter_t * ra_filter_init(ra_filter_t * filter, size_t sample_size){
@@ -524,6 +531,15 @@ static esp_err_t cmd_handler(httpd_req_t *req){
             detection_enabled = val;
         }
     }
+    else if(!strcmp(variable, "udp_sender")) {
+        udp_sender_enabled = val;
+    }
+    else if(!strcmp(variable, "ftp_sender")) {
+        ftp_sender_enabled = val;
+    }
+    else if(!strcmp(variable, "send_interval")) {
+        send_interval = val;
+    }
     else {
         res = -1;
     }
@@ -571,6 +587,9 @@ static esp_err_t status_handler(httpd_req_t *req){
     p+=sprintf(p, "\"face_detect\":%u,", detection_enabled);
     p+=sprintf(p, "\"face_enroll\":%u,", is_enrolling);
     p+=sprintf(p, "\"face_recognize\":%u", recognition_enabled);
+    p+=sprintf(p, "\"udp_sender\":%u,", udp_sender_enabled);
+    p+=sprintf(p, "\"ftp_sender\":%u,", ftp_sender_enabled);
+    p+=sprintf(p, "\"send_interval\":%d,", send_interval);
     *p++ = '}';
     *p++ = 0;
     httpd_resp_set_type(req, "application/json");
@@ -583,7 +602,11 @@ static esp_err_t index_handler(httpd_req_t *req){
     httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
     sensor_t * s = esp_camera_sensor_get();
     if (s->id.PID == OV3660_PID) {
+        #if defined(index_ov3660_html_gz_len)
         return httpd_resp_send(req, (const char *)index_ov3660_html_gz, index_ov3660_html_gz_len);
+        #else
+        httpd_resp_send(req, (const char *)index_ov2640_html_gz, index_ov2640_html_gz_len);
+        #endif
     }
     return httpd_resp_send(req, (const char *)index_ov2640_html_gz, index_ov2640_html_gz_len);
 }
@@ -612,6 +635,14 @@ void startCameraServer(){
         .user_ctx  = NULL
     };
 
+    /* cam.jpg ハンドラ追加 */
+    httpd_uri_t capture_jpg = {
+        .uri       = "/cam.jpg",
+        .method    = HTTP_GET,
+        .handler   = capture_handler,
+        .user_ctx  = NULL
+    };
+    
     httpd_uri_t capture_uri = {
         .uri       = "/capture",
         .method    = HTTP_GET,
@@ -651,6 +682,7 @@ void startCameraServer(){
         httpd_register_uri_handler(camera_httpd, &cmd_uri);
         httpd_register_uri_handler(camera_httpd, &status_uri);
         httpd_register_uri_handler(camera_httpd, &capture_uri);
+        httpd_register_uri_handler(camera_httpd, &capture_jpg);
     }
 
     config.server_port += 1;

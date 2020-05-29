@@ -41,6 +41,25 @@ PSRAMを使用しているので、PSRAMの有効／無効の設定が表示さ�
 * PSRAM : Enable
 * Partition Sceme : Huge App (3MB APP No OTA/1MB SPIFFS)
 
+## HTMLコンテンツの確認方法
+
+	ヘッダファイルのGZIP化：
+	../tools/header2gz.py
+	
+	内容確認：
+	zcat camera_index_ov2640.html.gz
+	
+	GZIPの展開方法：
+	gzip -d camera_index_ov2640.html.gz
+
+## HTMLコンテンツの作成方法
+
+	GZIP化
+	gzip -k camera_index_ov2640.html
+	
+	GZIPのヘッダファイル化
+	../tools/gz2header.py
+
 ## Raspberry Pi側の実行方法
 
 同じWi-Fiに接続したRaspberry Piで下記のコマンドを実行するとサーバが起動します。
