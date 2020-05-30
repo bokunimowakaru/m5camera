@@ -24,20 +24,22 @@
  ******************************************************************************
  ※FTPサーバが必要です。
  　ラズベリーパイへ、FTPサーバをセットアップするには下記を実行してください。
- 　~/esp/tools/ftp_setup.sh
+ 　~/m5camera/tools/ftp_setup.sh
  ※FTPでは、ユーザ名やパスワード、データーが平文で転送されます。
  　インターネット上で扱う場合は、セキュリティに対する配慮が必要です。
  *****************************************************************************/
 #define FTP_TO   "192.168.0.10"             // FTP 送信先のIPアドレス
 #define FTP_USER "pi"                       // FTP ユーザ名(Raspberry Pi)
 #define FTP_PASS "password"                 // FTP パスワード(Raspberry Pi)
-#define FTP_DIR  "~"                        // FTP ディレクトリ(Raspberry Pi)
-
+#define FTP_DIR  "~/"                       // FTP ディレクトリ(Raspberry Pi)
+#define Filename "cam_a_5_0000.jpg"         // FTP 保存先のファイル名
+#define FileNumMax 16                       // FTP 保存先の最大ファイル数
+int     FileNum = 1;						// 現在のファイル番号
+boolean FileNumOVF = false;					// オーバーフロー用フラグ
 
 /******************************************************************************
  UDP 設定
  *****************************************************************************/
-#define SENDTO "255.255.255.255"			// UDP送信先IPアドレス
 #define PORT 1024							// UDP送信先ポート番号
 #define DEVICE_CAM  "cam_a_5,"				// デバイス名(カメラ)
 #define DEVICE_PIR  "pir_s_5,"				// デバイス名(人感センサ)
@@ -65,21 +67,22 @@ int8_t pir_enabled = 1;						// PIR 人感センサ無効=0,有効=1
 int8_t udp_sender_enabled = 1;				// UDP送信無効=0,有効=1
 int8_t ftp_sender_enabled = 0;				// FTP送信無効=0,有効=1
 int16_t send_interval = 30;					// 送信間隔（秒）
-String ip;									// IPアドレス（文字列）
+IPAddress IP_LOCAL;							// 本機のIPアドレス
+IPAddress IP_BROAD;							// ブロードキャストIPアドレス
 int pir=0;									// 人感センサ値
 int send_c = 0;								// タイマー
 
 void sendUdp(String dev, String S){
 	WiFiUDP udp;							// UDP通信用のインスタンスを定義
-	udp.beginPacket(SENDTO, PORT);			// UDP送信先を設定
+	udp.beginPacket(IP_BROAD, PORT);		// UDP送信先を設定
 	udp.println(dev + S);
 	udp.endPacket();						// UDP送信の終了(実際に送信する)
-	Serial.println(S);
+	Serial.println("udp://" + IP_BROAD.toString() + ":" + PORT + " " + dev + S);
 	delay(200); 							// 送信待ち時間
 }
 
 void sendUdp_Fd(uint16_t fd_num){
-	sendUdp(DEVICE_CAM, String(fd_num) + ", http://" + ip + "/cam.jpg");
+	sendUdp(DEVICE_CAM, String(fd_num) + ", http://" + IP_LOCAL.toString() + "/cam.jpg");
 }
 void sendUdp_Pir(int pir){
 	sendUdp(DEVICE_PIR, String(pir));
@@ -179,15 +182,17 @@ void setup() {
 		delay(500);
 		Serial.print(".");
 	}
-	ip = WiFi.localIP().toString();
-	Serial.println("");
+	IP_LOCAL = WiFi.localIP();
+	Serial.println(IP_LOCAL);
 	Serial.println("WiFi connected");
 
 	startCameraServer();
-
 	Serial.print("Camera Ready! Use 'http://");
-	Serial.print(ip);
+	Serial.print(IP_LOCAL);
 	Serial.println("' to connect");
+
+	IP_BROAD = IP_LOCAL;
+	IP_BROAD[3] = 255;
 	sendUdp_Ident();
 }
 
@@ -200,23 +205,50 @@ void loop() {
 		face_detection_enabled,face_recognition_enabled,(face),
 		udp_sender_enabled,ftp_sender_enabled
 	);
+	
+	/* トリガ①：カメラによる顔検出 */
 	if((face_detection_enabled || face_recognition_enabled) && face){
 		Serial.println("Triggered by Face Detector");
 		sendUdp_Fd(face);
 		send_c = 0;
 	}
+	
+	/* トリガ②：人感センサ（PIR Unit）による動体検出 */
 	if(pir_enabled && PIR_GPIO_NUM > 0 && pir != digitalRead(PIR_GPIO_NUM) ){
 		pir = !pir;
-		if(pir) Serial.println("Triggered by PIR");
+		if(pir){
+			Serial.println("Triggered by PIR");
+			send_c = 0;
+		}
 		sendUdp_Pir(pir);
-		send_c = 0;
 		// M5 STACK PIR UNIT の信号保持時間は2秒なので1秒毎の確認でOK
 	}
+	
+	/* トリガ③：インターバル・タイマ設定時間の経過 */
 	if(send_interval && send_c >= send_interval){
 		Serial.println("Triggered by Interval Timer");
 		if(udp_sender_enabled) sendUdp_Ident();
 		send_c = 0;
 	}
+	
+	/* FTP送信（トリガ発生時） */
+	if(ftp_sender_enabled && !send_c ){
+		int len = sizeof(Filename);
+		if(len <= 17){
+			char s[17] = Filename;
+			int div = 1;
+			for(int i=0; i<4; i++){
+				s[len - 6 - i] = '0' + ((FileNum / div) % 10);
+				div *= 10;
+			}
+			FTP_Sender(s, FileNum, FileNumOVF);
+			FileNum++;
+			if(FileNum > FileNumMax){
+				FileNum = 0;		// FileNumMaxよりも1だけ多く(書き換え用)
+				FileNumOVF = true;	// 1周した
+			}
+		} else Serial.printf("ERROR: length of Filename %d\n",len);
+	}
 	delay(1000 - (send_c ? 0 : 200) - (face ? 200 : 0));
-	if(send_interval) send_c++;
+	if(send_interval) send_c++; else send_c = 1;
 }
