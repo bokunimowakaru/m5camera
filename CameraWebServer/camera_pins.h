@@ -1,3 +1,4 @@
+////////////////////////////////////////
 #if defined(CAMERA_MODEL_WROVER_KIT)
 #define PWDN_GPIO_NUM    -1
 #define RESET_GPIO_NUM   -1
@@ -17,6 +18,9 @@
 #define HREF_GPIO_NUM    23
 #define PCLK_GPIO_NUM    22
 
+#define PIR_GPIO_NUM      -1
+
+////////////////////////////////////////
 #elif defined(CAMERA_MODEL_ESP_EYE)
 #define PWDN_GPIO_NUM    -1
 #define RESET_GPIO_NUM   -1
@@ -36,6 +40,9 @@
 #define HREF_GPIO_NUM    27
 #define PCLK_GPIO_NUM    25
 
+#define PIR_GPIO_NUM     -1
+
+////////////////////////////////////////
 #elif defined(CAMERA_MODEL_M5STACK_PSRAM)
 #define PWDN_GPIO_NUM     -1
 #define RESET_GPIO_NUM    15
@@ -55,6 +62,9 @@
 #define HREF_GPIO_NUM     26
 #define PCLK_GPIO_NUM     21
 
+#define PIR_GPIO_NUM      13
+
+////////////////////////////////////////
 #elif defined(CAMERA_MODEL_M5STACK_V2_PSRAM)
 #define PWDN_GPIO_NUM     -1
 #define RESET_GPIO_NUM    15
@@ -74,6 +84,9 @@
 #define HREF_GPIO_NUM     26
 #define PCLK_GPIO_NUM     21
 
+#define PIR_GPIO_NUM      13
+
+////////////////////////////////////////
 #elif defined(CAMERA_MODEL_M5STACK_WIDE)
 #define PWDN_GPIO_NUM     -1
 #define RESET_GPIO_NUM    15
@@ -93,6 +106,9 @@
 #define HREF_GPIO_NUM     26
 #define PCLK_GPIO_NUM     21
 
+#define PIR_GPIO_NUM      -1
+
+////////////////////////////////////////
 #elif defined(CAMERA_MODEL_AI_THINKER)
 #define PWDN_GPIO_NUM     32
 #define RESET_GPIO_NUM    -1
@@ -112,6 +128,9 @@
 #define HREF_GPIO_NUM     23
 #define PCLK_GPIO_NUM     22
 
+#define PIR_GPIO_NUM      -1
+
+////////////////////////////////////////
 #elif defined(CAMERA_MODEL_TTGO_T_JOURNAL)
 #define PWDN_GPIO_NUM      0
 #define RESET_GPIO_NUM    15
@@ -131,6 +150,9 @@
 #define HREF_GPIO_NUM     26
 #define PCLK_GPIO_NUM     21
 
+#define PIR_GPIO_NUM      -1
+
+////////////////////////////////////////
 #elif defined(CAMERA_MODEL_TTGO_T_CAMERA)
 #define PWDN_GPIO_NUM     26
 #define RESET_GPIO_NUM    -1
@@ -150,6 +172,9 @@
 #define HREF_GPIO_NUM     25
 #define PCLK_GPIO_NUM     19
 
+#define PIR_GPIO_NUM      33
+
+////////////////////////////////////////
 #elif defined(CAMERA_MODEL_TTGO_T_CAMERA_V16)
 #define PWDN_GPIO_NUM     -1
 #define RESET_GPIO_NUM    -1
@@ -169,6 +194,9 @@
 #define HREF_GPIO_NUM     27
 #define PCLK_GPIO_NUM     25
 
+#define PIR_GPIO_NUM      33
+
+////////////////////////////////////////
 #else
 #error "Camera model not selected"
 #endif

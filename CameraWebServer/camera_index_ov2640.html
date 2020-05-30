@@ -534,6 +534,13 @@
                                 <label class="slider" for="face_recognize"></label>
                             </div>
                         </div>
+                        <div class="input-group" id="pir_sensor-group">
+                            <label for="pir_sensor">PIR Sensor</label>
+                            <div class="switch">
+                                <input id="pir_sensor" type="checkbox" class="default-action" checked="checked">
+                                <label class="slider" for="pir_sensor"></label>
+                            </div>
+                        </div>
                         <div class="input-group" id="udp_sender-group">
                             <label for="udp_sender">UDP Sender</label>
                             <div class="switch">
@@ -550,9 +557,9 @@
                         </div>
                         <div class="input-group" id="send_interval-group">
                             <label for="send_interval">Send Interval</label>
-                            <div class="range-min">30</div>
-                            <input type="range" id="send_interval" min="30" max="360" value="60" class="default-action">
-                            <div class="range-max">360</div>
+                            <div class="range-min">OFF</div>
+                            <input type="range" id="send_interval" min="0" max="3600" value="30" class="default-action">
+                            <div class="range-max">1h</div>
                         </div>
                         <section id="buttons">
                             <button id="get-still">Get Still</button>

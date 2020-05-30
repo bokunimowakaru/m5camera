@@ -13,7 +13,7 @@ if len(argv) == 2:
 	filename = argv[1]
 	i = filename.find('.html.gz')
 	if i > 0 and i + 8 == len(filename):
-		saveto = filename[0:i] + '.html.gz'
+		saveto = filename[0:i] + '.h'
 
 print('input filename  =',filename)
 print('output filename =',saveto)

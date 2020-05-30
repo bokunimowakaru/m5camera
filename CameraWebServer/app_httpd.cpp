@@ -61,13 +61,21 @@ httpd_handle_t stream_httpd = NULL;
 httpd_handle_t camera_httpd = NULL;
 
 static mtmn_config_t mtmn_config = {0};
-static int8_t detection_enabled = 0;
-static int8_t recognition_enabled = 0;
+extern int8_t face_detection_enabled;
+extern int8_t face_recognition_enabled;
 static int8_t is_enrolling = 0;
+extern int8_t pir_enabled;
 extern int8_t udp_sender_enabled;
 extern int8_t ftp_sender_enabled;
 extern int16_t send_interval;
+static uint16_t face_detected_num = 0;
 static face_id_list id_list = {0};
+
+uint16_t get_face_detected_num(){
+	uint16_t i = face_detected_num;
+	face_detected_num = 0;
+	return i;
+}
 
 static ra_filter_t * ra_filter_init(ra_filter_t * filter, size_t sample_size){
     memset(filter, 0, sizeof(ra_filter_t));
@@ -243,7 +251,7 @@ static esp_err_t capture_handler(httpd_req_t *req){
     bool s;
     bool detected = false;
     int face_id = 0;
-    if(!detection_enabled || fb->width > 400){
+    if(!face_detection_enabled || fb->width > 400){
         size_t fb_len = 0;
         if(fb->format == PIXFORMAT_JPEG){
             fb_len = fb->len;
@@ -286,7 +294,8 @@ static esp_err_t capture_handler(httpd_req_t *req){
 
     if (net_boxes){
         detected = true;
-        if(recognition_enabled){
+        face_detected_num ++;
+        if(face_recognition_enabled){
             face_id = run_face_recognition(image_matrix, net_boxes);
         }
         draw_face_boxes(image_matrix, net_boxes, face_id);
@@ -349,7 +358,7 @@ static esp_err_t stream_handler(httpd_req_t *req){
             fr_face = fr_start;
             fr_encode = fr_start;
             fr_recognize = fr_start;
-            if(!detection_enabled || fb->width > 400){
+            if(!face_detection_enabled || fb->width > 400){
                 if(fb->format != PIXFORMAT_JPEG){
                     bool jpeg_converted = frame2jpg(fb, 80, &_jpg_buf, &_jpg_buf_len);
                     esp_camera_fb_return(fb);
@@ -376,7 +385,7 @@ static esp_err_t stream_handler(httpd_req_t *req){
                     } else {
                         fr_ready = esp_timer_get_time();
                         box_array_t *net_boxes = NULL;
-                        if(detection_enabled){
+                        if(face_detection_enabled){
                             net_boxes = face_detect(image_matrix, &mtmn_config);
                         }
                         fr_face = esp_timer_get_time();
@@ -384,7 +393,7 @@ static esp_err_t stream_handler(httpd_req_t *req){
                         if (net_boxes || fb->format != PIXFORMAT_JPEG){
                             if(net_boxes){
                                 detected = true;
-                                if(recognition_enabled){
+                                if(face_recognition_enabled){
                                     face_id = run_face_recognition(image_matrix, net_boxes);
                                 }
                                 fr_recognize = esp_timer_get_time();
@@ -450,6 +459,7 @@ static esp_err_t stream_handler(httpd_req_t *req){
             (uint32_t)ready_time, (uint32_t)face_time, (uint32_t)recognize_time, (uint32_t)encode_time, (uint32_t)process_time,
             (detected)?"DETECTED ":"", face_id
         );
+        face_detected_num += (int)detected;
     }
 
     last_frame = 0;
@@ -519,17 +529,20 @@ static esp_err_t cmd_handler(httpd_req_t *req){
     else if(!strcmp(variable, "wb_mode")) res = s->set_wb_mode(s, val);
     else if(!strcmp(variable, "ae_level")) res = s->set_ae_level(s, val);
     else if(!strcmp(variable, "face_detect")) {
-        detection_enabled = val;
-        if(!detection_enabled) {
-            recognition_enabled = 0;
+        face_detection_enabled = val;
+        if(!face_detection_enabled) {
+            face_recognition_enabled = 0;
         }
     }
     else if(!strcmp(variable, "face_enroll")) is_enrolling = val;
     else if(!strcmp(variable, "face_recognize")) {
-        recognition_enabled = val;
-        if(recognition_enabled){
-            detection_enabled = val;
+        face_recognition_enabled = val;
+        if(face_recognition_enabled){
+            face_detection_enabled = val;
         }
+    }
+    else if(!strcmp(variable, "pir_sensor")) {
+        pir_enabled = val;
     }
     else if(!strcmp(variable, "udp_sender")) {
         udp_sender_enabled = val;
@@ -584,9 +597,10 @@ static esp_err_t status_handler(httpd_req_t *req){
     p+=sprintf(p, "\"hmirror\":%u,", s->status.hmirror);
     p+=sprintf(p, "\"dcw\":%u,", s->status.dcw);
     p+=sprintf(p, "\"colorbar\":%u,", s->status.colorbar);
-    p+=sprintf(p, "\"face_detect\":%u,", detection_enabled);
+    p+=sprintf(p, "\"face_detect\":%u,", face_detection_enabled);
     p+=sprintf(p, "\"face_enroll\":%u,", is_enrolling);
-    p+=sprintf(p, "\"face_recognize\":%u", recognition_enabled);
+    p+=sprintf(p, "\"face_recognize\":%u", face_recognition_enabled);
+    p+=sprintf(p, "\"pir_sensor\":%u,", pir_enabled);
     p+=sprintf(p, "\"udp_sender\":%u,", udp_sender_enabled);
     p+=sprintf(p, "\"ftp_sender\":%u,", ftp_sender_enabled);
     p+=sprintf(p, "\"send_interval\":%d,", send_interval);
