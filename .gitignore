@@ -32,3 +32,6 @@
 *.app
 
 *.BAK
+*.csv
+*.log
+cam*.jpg
