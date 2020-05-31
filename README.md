@@ -10,6 +10,8 @@ Wi-Fi 搭載 カメラ M5Camera が顔を検知した時や人感センサ（PIR
 
 コンパイル済みファームウェアも提供予定です。
 
+![説明図1](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig1.jpg)
+
 ------------------------------------------------------------------------------------
 # CameraWebServer 設定方法
 
@@ -89,6 +91,8 @@ PSRAMを使用しているので、「有効」にしてください（有効／
 
 * Raspberry Pi 用 FTPサーバ vsftpd  
 	CentOSや RedHat等で使用されているFTPサーバです
+
+![説明図2](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig2.jpg)
 
 ## Raspberry Pi 用 HTTP通信サーバ get_photo.sh  
 
