@@ -1,4 +1,4 @@
-# IoT M5Camera for Arduino IDE
+# IoT M5Camera with FTP Client for Arduino IDE
 
 ## CameraWebServer forked by bokunimo.net
 
@@ -10,7 +10,16 @@ Wi-Fi 搭載 カメラ M5Camera が顔を検知した時や人感センサ（PIR
 
 コンパイル済みファームウェアも提供予定です。
 
+## スマートフォンで動作確認・Raspberry Pi へ FTP 転送
+
+スマートフォンのブラウザから M5Camera へアクセスし、動作確認が出来ます。
+また、顔検知機能のON/OFFや、人感センサのON/OFF、FTP 送信のON/OFF、送信間隔などもスマートフォンから行えます。  
+
 ![説明図1](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig1.jpg)
+
+FTP 送信時は、写真だけでなく、HTMLファイルも転送するので、パソコンのブラウザなどで写真を一覧表示することが出来ます。初期値では、16枚までの写真をHTMLファイルで表示します（int FileNumMax = 16;で変更可能）。  
+
+![説明図2](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig2.jpg)
 
 ------------------------------------------------------------------------------------
 # CameraWebServer 設定方法
@@ -91,8 +100,6 @@ PSRAMを使用しているので、「有効」にしてください（有効／
 
 * Raspberry Pi 用 FTPサーバ vsftpd  
 	CentOSや RedHat等で使用されているFTPサーバです
-
-![説明図2](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig2.jpg)
 
 ## Raspberry Pi 用 HTTP通信サーバ get_photo.sh  
 
