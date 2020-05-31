@@ -15,7 +15,7 @@ echo "Listening UDP port "${PORT}"..."              # ポート番号表示
 mkdir photo >& /dev/null                            # 写真保存用フォルダ作成
 while true                                          # 永遠に
 do                                                  # 繰り返し
-    UDP=`sudo nc -luw0 ${PORT}|tr -d [:cntrl:]|\
+    UDP=`nc -luw0 ${PORT}|tr -d [:cntrl:]|\
     tr -d "\!\"\$\%\&\'\(\)\*\+\-\;\<\=\>\?\[\\\]\^\{\|\}\~"`
                                                     # UDPパケットを取得
     DATE=`date "+%Y/%m/%d %R"`                      # 日時を取得
