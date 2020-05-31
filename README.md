@@ -165,20 +165,30 @@ FTPサーバは、以下の方法でインストールすることが出来ま�
 --------------------------------------------------------------------------------
 # 権利情報
 
-## このソースコードには、下記の製作物が含まれます。
+## このソースコード等には、下記の製作物が含まれます。
 
-* CameraWebServer：  
+* Arduino core for the ESP32：  
+	Espressif Systems Shanghai,China http://www.espressif.com  
 	GNU LESSER GENERAL PUBLIC LICENSE Version 2.1  
+
+* CameraWebServer (ESP32 sketches examples)：  
+	Hristo Gochkov, Ivan Grokhtkov  
+	GNU LESSER GENERAL PUBLIC LICENSE Version 2.1  
+
 * app_httpd.cpp：  
-	Apache License, Version 2.0
+	Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD  
+	Apache License, Version 2.0  
 
 ## 改変部の権利は 国野 亘 が所有します。
 	GNU Lesser General Public License v2.1
 
 ### 主な変更点
+* Soft APモードへの自動切り替え
 * UDPによる撮影完了通知機能
-* FTPによる写真送信機能(作成中)
+* FTPによる写真送信機能
 * UDP、FTP、送信間隔の設定用ユーザインタフェース
+* Raspberry Pi用 サーバ・ソフトウェア
+* 解説・日本語訳など
 
 --------------------------------------------------------------------------------
 # 関連情報
