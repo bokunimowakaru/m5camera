@@ -20,6 +20,10 @@ FTP 送信時は、写真だけでなく、HTMLファイルも転送するので
 
 ![説明図2](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig2.jpg)
 
+操作画面は、日本語表示に対応したほか、検知機能のON/OFF設定と、送信ON/OFF設定、送信間隔の設定が可能です。  
+
+![説明図3](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig3.jpg)
+
 ------------------------------------------------------------------------------------
 # CameraWebServer 動作確認方法
 
