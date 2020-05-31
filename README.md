@@ -205,7 +205,7 @@ FTPサーバは、以下の方法でインストールすることが出来ま�
 	Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD  
 	Apache License, Version 2.0  
 
-## 改変部の権利は 国野 亘 が所有します。
+## 改変部の著作権は 国野 亘 が所有します。ソースコードやコンテンツのフォルダなどにライセンス表示が無い著作物については、Arduino core for the ESP32 と同じライセンス形態とします。  
 	GNU Lesser General Public License v2.1
 
 ### 主な変更点
