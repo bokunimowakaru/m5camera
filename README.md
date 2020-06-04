@@ -1,7 +1,7 @@
 # IoT M5Camera with FTP Client for Arduino IDE
 ## CameraWebServerFTP forked by bokunimo.net
 
-Wi-Fi 搭載 カメラ M5Camera が顔を検知した時や人感センサ（PIR Unit）が人体などの動きを検知したとき、あるいは設定した周期ごとに、写真を撮影し、FTP サーバや、Windows PC、Raspberry Pi 等へ転送します。  
+Wi-Fi 搭載 カメラ M5Camera が顔を検知した時や人感センサ（PIR Unit）が人体などの動きを検知したとき、あるいは設定した周期ごとに、写真を撮影し、FTP サーバや、LINE、Windows PC、Raspberry Pi 等へ転送します。  
 
 * Wi-Fi マイコン ESP32 と、JPEGカメラ OV2640 を搭載した M5Camera 用のサンプル・ソフトウェアです。  
 * Espressif Systems の Arduino IDE 用 開発環境（espressif / arduino-esp32, Arduino core for the ESP32 ）に含まれる サンプル・ソフトウェアを基に、改変したものです。  
@@ -12,7 +12,7 @@ Wi-Fi 搭載 カメラ M5Camera が顔を検知した時や人感センサ（PIR
 ## スマートフォンで動作確認・Raspberry Pi へ FTP 転送
 
 スマートフォンのブラウザから M5Camera へアクセスし、動作確認が出来ます。
-また、顔検知機能のON/OFFや、人感センサのON/OFF、FTP 送信のON/OFF、送信間隔などもスマートフォンから行えます。  
+また、顔検知機能のON/OFFや、人感センサのON/OFF、FTP 送信のON/OFF、LINE 送信のON/OFF、送信間隔などもスマートフォンから行えます。  
 
 ![説明図1](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig1.jpg)
 
