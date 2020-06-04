@@ -23,7 +23,6 @@ FTP送信用クライアント
 #include <WiFi.h>                           // ESP32用WiFiライブラリ
 #include "esp_timer.h"
 #include "esp_camera.h"
-#include "img_converters.h"
 
 #define FTP_WAIT 1
 #define BUFFER_SIZE 128

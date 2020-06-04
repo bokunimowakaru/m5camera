@@ -4,19 +4,22 @@
 
 /******************************************************************************
  カメラ 選択 ※使用するカメラを選択してください。
+ ******************************************************************************
+ ※ M5Camera version B を使用する場合は変更不要です。
+ ※ version A の場合は #define CAMERA_MODEL_M5STACK_PSRAMに変更してください。
  *****************************************************************************/
-// #define CAMERA_MODEL_M5STACK_PSRAM       // M5Camera version A
-// #define CAMERA_MODEL_M5STACK_V2_PSRAM    // M5Camera version B
-// #define CAMERA_MODEL_TTGO_T_CAMERA       // TTGO T-Camera OV2640_V05用
-// #define CAMERA_MODEL_TTGO_T_CAMERA_V16   // TTGO T-Camera OV2640_V1.6用
+// CAMERA_MODEL_M5STACK_PSRAM               // M5Camera version A
+// CAMERA_MODEL_M5STACK_V2_PSRAM            // M5Camera version B
+// CAMERA_MODEL_TTGO_T_CAMERA               // TTGO T-Camera OV2640_V05用
+// CAMERA_MODEL_TTGO_T_CAMERA_V16           // TTGO T-Camera OV2640_V1.6用
 
 #define CAMERA_MODEL_M5STACK_V2_PSRAM       // [選択例] M5Camera version B
 
 /******************************************************************************
  Wi-Fi 設定 ※下記にゲートウェイのWi-Fi設定を入力してください
  *****************************************************************************/
-#define WIFI_SSID   "1234ABCD"              // your wifi ssid
-#define WIFI_PASSWD "password"              // your wifi password
+#define WIFI_SSID   "1234ABCD"              // your wifi ssid (★要設定)
+#define WIFI_PASSWD "password"              // your wifi password (★要設定)
 #define TIMEOUT 7000                        // Wi-Fi接続タイムアウト 7秒
 
 /******************************************************************************
@@ -27,12 +30,32 @@
  　~/m5camera/tools/ftp_setup.sh
  ※FTPでは、ユーザ名やパスワード、データーが平文で転送されます。
  　インターネット上で扱う場合は、セキュリティに対する配慮が必要です。
+ ※下記define文にFTPパスワードを設定すると、自動的に FTP = ON になります。
+ ・ユーザ画面(HTMLコンテンツ)の初期値は FTP = OFF のままです。
+ 　気になる方は、HTMLファイルを書き換えてコンパイルしなおしてください。
  *****************************************************************************/
-#define FTP_TO   "192.168.0.10"             // FTP 送信先のIPアドレス
-#define FTP_USER "pi"                       // FTP ユーザ名(Raspberry Pi等)
-#define FTP_PASS "your_password"            // FTP パスワード(Raspberry Pi等)
+#define FTP_TO   "192.168.4.2"              // FTP 送信先のIPアドレス(★要設定)
+#define FTP_USER "pi"                       // FTP ユーザ名(★要設定)
+#define FTP_PASS "your_password"            // FTP パスワード(★要設定)
 #define FTP_DIR  "~/"                       // FTP ディレクトリ(Raspberry Pi等)
 #define Filename "cam_a_5_0000.jpg"         // FTP 保存先のファイル名
+
+/******************************************************************************
+ LINE Notify 設定
+ ******************************************************************************
+ ※LINE アカウントと LINE Notify 用のトークンが必要です。
+    1. https://notify-bot.line.me/ へアクセス
+    2. 右上のアカウントメニューから「マイページ」を選択
+    3. トークン名「esp32」を入力
+    4. 送信先のトークルームを選択する（「1:1でLINE NOtifyから通知を受け取る」など）
+    5. [発行する]ボタンでトークンが発行される
+    6. [コピー]ボタンでクリップボードへコピー
+    7. 下記のLINE_TOKENに貼り付け
+ *****************************************************************************/
+
+#define LINE_TOKEN  "your_token"            // LINE Notify 用トークン(★要設定)
+#define MESSAGE_PIR "人感センサが反応しました。"
+#define MESSAGE_CAM "カメラが顔を検知しました。"
 
 /******************************************************************************
  UDP 設定
@@ -62,8 +85,7 @@
  *****************************************************************************/
 
 #include "camera_pins.h"                    // 選択したカメラの設定値の組込部
-void startCameraServer();
-uint16_t get_face_detected_num();
+#include "app_httpd.h"                      // カメラ制御用ＩＦ部の組み込み
 
 int         FileNumMax = 16;                // FTP 保存先の最大ファイル数
 int         FileNum = 1;                    // 現在のファイル番号
@@ -71,8 +93,9 @@ boolean     FileNumOVF = false;             // オーバーフロー用フラグ
 int8_t      face_detection_enabled = 0;     // 顔検知 無効=0,有効=1
 int8_t      face_recognition_enabled = 0;   // 顔認証 無効=0,有効=1
 int8_t      pir_enabled = 1;                // PIR 人感センサ無効=0,有効=1
-int8_t      udp_sender_enabled = 1;         // UDP送信無効=0,有効=1
-int8_t      ftp_sender_enabled = 0;         // FTP送信無効=0,有効=1
+int8_t      udp_sender_enabled = 1;         // UDP 送信無効=0,有効=1
+int8_t      ftp_sender_enabled = 0;         // FTP 送信無効=0,有効=1
+int8_t      line_sender_enabled = 1;        // LINE HTTP 送信無効=0,有効=1
 int16_t     send_interval = 30;             // 送信間隔（秒）
 IPAddress   IP_LOCAL;                       // 本機のIPアドレス
 IPAddress   IP_BROAD;                       // ブロードキャストIPアドレス
@@ -229,43 +252,54 @@ void setup() {
     IP_BROAD[3] = 255;
     sendUdp_Ident();
     
+    if(strcmp("your_token",LINE_TOKEN) != 0) line_sender_enabled = 1;
     if(strcmp("your_password",FTP_PASS) != 0) ftp_sender_enabled = 1;
 }
 
 void loop() {
     uint16_t face = get_face_detected_num();
-    Serial.printf(
-        "%04d/%04d, pir:%d,(%d), face:%d,%d,(%d), udp:%d, ftp:%d\n",
-        send_c,send_interval,
-        pir_enabled,(pir),
-        face_detection_enabled,face_recognition_enabled,(face),
-        udp_sender_enabled,ftp_sender_enabled
-    );
     
     /* トリガ①：カメラによる顔検出 */
-    if((face_detection_enabled || face_recognition_enabled) && face){
-        Serial.println("Triggered by Face Detector");
-        sendUdp_Fd(face);
-        send_c = 0;
+    if(face_detection_enabled || face_recognition_enabled){
+        if(!face){
+            capture_face();
+            face = get_face_detected_num();
+        }
+        if(face){
+            Serial.println("[!] Triggered by Face Detector");
+            if(udp_sender_enabled) sendUdp_Fd(face);
+            if(line_sender_enabled) LINE_Camera(LINE_TOKEN, MESSAGE_CAM);
+            send_c = 0;
+        }
     }
     
     /* トリガ②：人感センサ（PIR Unit）による動体検出 */
     if(pir_enabled && PIR_GPIO_NUM > 0 && pir != digitalRead(PIR_GPIO_NUM) ){
         pir = !pir;
         if(pir){
-            Serial.println("Triggered by PIR");
+            Serial.println("[!] Triggered by PIR");
+            if(line_sender_enabled) LINE_Camera(LINE_TOKEN, MESSAGE_PIR);
             send_c = 0;
         }
-        sendUdp_Pir(pir);
+        if(udp_sender_enabled) sendUdp_Pir(pir);
         // M5 STACK PIR UNIT の信号保持時間は2秒なので1秒毎の確認でOK
     }
-    
+        
     /* トリガ③：インターバル・タイマ設定時間の経過 */
     if(send_interval && send_c >= send_interval){
-        Serial.println("Triggered by Interval Timer");
+        Serial.println("[!] Triggered by Interval Timer");
         if(udp_sender_enabled) sendUdp_Ident();
         send_c = 0;
     }
+    
+    /* 状態をシリアル出力 */
+    Serial.printf(
+        "%04d/%04d, pir:%d,(%d), face:%d,%d,(%d), udp:%d, ftp:%d, line:%d\n",
+        send_c,send_interval,
+        pir_enabled,(pir),
+        face_detection_enabled,face_recognition_enabled,(face),
+        udp_sender_enabled,ftp_sender_enabled,line_sender_enabled
+    );
     
     /* FTP送信（トリガ発生時） */
     if(ftp_sender_enabled && !send_c ){
@@ -291,6 +325,7 @@ void loop() {
             }
         } else Serial.printf("ERROR: length of Filename %d\n",len);
     }
+
     delay(1000 - (send_c ? 0 : 200) - (face ? 200 : 0));
     if(send_interval) send_c++; else send_c = 1;
 }

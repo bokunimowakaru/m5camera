@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 #include "esp_http_server.h"
 #include "esp_timer.h"
 #include "esp_camera.h"
@@ -51,7 +52,9 @@ typedef struct {
         size_t len;
 } jpg_chunking_t;
 
+#ifndef PART_BOUNDARY
 #define PART_BOUNDARY "123456789000000000000987654321"
+#endif
 static const char* _STREAM_CONTENT_TYPE = "multipart/x-mixed-replace;boundary=" PART_BOUNDARY;
 static const char* _STREAM_BOUNDARY = "\r\n--" PART_BOUNDARY "\r\n";
 static const char* _STREAM_PART = "Content-Type: image/jpeg\r\nContent-Length: %u\r\n\r\n";
@@ -67,14 +70,15 @@ static int8_t is_enrolling = 0;
 extern int8_t pir_enabled;
 extern int8_t udp_sender_enabled;
 extern int8_t ftp_sender_enabled;
+extern int8_t line_sender_enabled;
 extern int16_t send_interval;
 static uint16_t face_detected_num = 0;
 static face_id_list id_list = {0};
 
 uint16_t get_face_detected_num(){
-	uint16_t i = face_detected_num;
-	face_detected_num = 0;
-	return i;
+    uint16_t i = face_detected_num;
+    face_detected_num = 0;
+    return i;
 }
 
 static ra_filter_t * ra_filter_init(ra_filter_t * filter, size_t sample_size){
@@ -228,6 +232,74 @@ static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size
     }
     j->len += len;
     return len;
+}
+
+esp_err_t capture_face(){	// capture_handlerからhttpd_req_tを削除 
+                            // capture_handlerをNull入力に修正予定
+    camera_fb_t * fb = NULL;
+    esp_err_t res = ESP_OK;
+    int64_t fr_start = esp_timer_get_time();
+
+    fb = esp_camera_fb_get();
+    if (!fb) {
+        Serial.println("Camera capture failed");
+        return ESP_FAIL;
+    }
+
+    size_t out_len, out_width, out_height;
+    uint8_t * out_buf;
+    bool s;
+    bool detected = false;
+    int face_id = 0;
+    if(!face_detection_enabled || fb->width > 400){
+        size_t fb_len = 0;
+        if(fb->format == PIXFORMAT_JPEG){
+            fb_len = fb->len;
+        }
+        esp_camera_fb_return(fb);
+        int64_t fr_end = esp_timer_get_time();
+        Serial.printf("JPG: %uB %ums\n", (uint32_t)(fb_len), (uint32_t)((fr_end - fr_start)/1000));
+        return res;
+    }
+
+    dl_matrix3du_t *image_matrix = dl_matrix3du_alloc(1, fb->width, fb->height, 3);
+    if (!image_matrix) {
+        esp_camera_fb_return(fb);
+        Serial.println("dl_matrix3du_alloc failed");
+        return ESP_FAIL;
+    }
+
+    out_buf = image_matrix->item;
+    out_len = fb->width * fb->height * 3;
+    out_width = fb->width;
+    out_height = fb->height;
+
+    s = fmt2rgb888(fb->buf, fb->len, fb->format, out_buf);
+    esp_camera_fb_return(fb);
+    if(!s){
+        dl_matrix3du_free(image_matrix);
+        Serial.println("to rgb888 failed");
+        return ESP_FAIL;
+    }
+
+    box_array_t *net_boxes = face_detect(image_matrix, &mtmn_config);
+
+    if (net_boxes){
+        detected = true;
+        face_detected_num ++;
+        if(face_recognition_enabled){
+            face_id = run_face_recognition(image_matrix, net_boxes);
+        }
+        free(net_boxes->score);
+        free(net_boxes->box);
+        free(net_boxes->landmark);
+        free(net_boxes);
+    }
+    dl_matrix3du_free(image_matrix);
+
+    int64_t fr_end = esp_timer_get_time();
+//  Serial.printf("FACE: %ums %s%d\n", (uint32_t)((fr_end - fr_start)/1000), detected?"DETECTED ":"", face_id);
+    return res;
 }
 
 static esp_err_t capture_handler(httpd_req_t *req){
@@ -550,6 +622,9 @@ static esp_err_t cmd_handler(httpd_req_t *req){
     else if(!strcmp(variable, "ftp_sender")) {
         ftp_sender_enabled = val;
     }
+    else if(!strcmp(variable, "line_sender")) {
+        line_sender_enabled = val;
+    }
     else if(!strcmp(variable, "send_interval")) {
         send_interval = val;
     }
@@ -603,6 +678,7 @@ static esp_err_t status_handler(httpd_req_t *req){
     p+=sprintf(p, "\"pir_sensor\":%u,", pir_enabled);
     p+=sprintf(p, "\"udp_sender\":%u,", udp_sender_enabled);
     p+=sprintf(p, "\"ftp_sender\":%u,", ftp_sender_enabled);
+    p+=sprintf(p, "\"line_sender\":%u,", line_sender_enabled);
     p+=sprintf(p, "\"send_interval\":%d,", send_interval);
     *p++ = '}';
     *p++ = 0;
