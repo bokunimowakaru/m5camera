@@ -68,18 +68,40 @@ FTP サーバへの写真転送機能を使用する場合は、CameraWebServer.
 	#define FTP_DIR  "~/"                       // FTP ディレクトリ(Raspberry Pi等)
 	#define Filename "cam_a_5_0000.jpg"         // FTP 保存先のファイル名
 
+## CameraWebServerFTP の LINE Notify 設定方法
+
+撮影した写真を LINE Notify へ送信することが出来ます。
+CameraWebServer.ino の下記の部分を変更してください。  
+
+	/******************************************************************************
+	 LINE Notify 設定
+	 ******************************************************************************
+	 ※LINE アカウントと LINE Notify 用のトークンが必要です。
+	    1. https://notify-bot.line.me/ へアクセス
+	    2. 右上のアカウントメニューから「マイページ」を選択
+	    3. トークン名「esp32」を入力
+	    4. 送信先のトークルームを選択する（「1:1でLINE NOtifyから通知を受け取る」など）
+	    5. [発行する]ボタンでトークンが発行される
+	    6. [コピー]ボタンでクリップボードへコピー
+	    7. 下記のLINE_TOKENに貼り付け
+	 *****************************************************************************/
+
+	#define LINE_TOKEN  "your_token"            // LINE Notify 用トークン(★要設定)
+	#define MESSAGE_PIR "人感センサが反応しました。"
+	#define MESSAGE_CAM "カメラが顔を検知しました。"
+
 ## CameraWebServerFTP のカメラ選択方法
 
 使用するカメラを選択し、#defineしてください。初期状態では[選択例] M5Camera version B が選択されています。
-変更する場合は、[選択例]の行を消し、使用するカメラの行の先頭「// 」を消してください。
+変更する場合は、[選択例]の行に、使用するカメラを定義してください。
 
 	/******************************************************************************
 	 カメラ 選択 ※使用するカメラを選択してください。
 	 *****************************************************************************/
-	// #define CAMERA_MODEL_M5STACK_PSRAM       // M5Camera version A
-	// #define CAMERA_MODEL_M5STACK_V2_PSRAM    // M5Camera version B
-	// #define CAMERA_MODEL_TTGO_T_CAMERA       // TTGO T-Camera OV2640_V05用
-	// #define CAMERA_MODEL_TTGO_T_CAMERA_V16   // TTGO T-Camera OV2640_V1.6用
+	// CAMERA_MODEL_M5STACK_PSRAM       // M5Camera version A
+	// CAMERA_MODEL_M5STACK_V2_PSRAM    // M5Camera version B
+	// CAMERA_MODEL_TTGO_T_CAMERA       // TTGO T-Camera OV2640_V05用
+	// CAMERA_MODEL_TTGO_T_CAMERA_V16   // TTGO T-Camera OV2640_V1.6用
 	
 	#define CAMERA_MODEL_M5STACK_V2_PSRAM       // [選択例] M5Camera version B
 
