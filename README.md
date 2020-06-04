@@ -24,6 +24,10 @@ FTP 送信時は、写真だけでなく、HTMLファイルも転送するので
 
 ![説明図3](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig3.jpg)
 
+顔を検知したときや、人感センサが反応したときに、LINE Notify へ写真を送信することも出来ます。  
+
+![説明図4](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig4.jpg)
+
 ------------------------------------------------------------------------------------
 # CameraWebServerFTP の動作確認方法
 
