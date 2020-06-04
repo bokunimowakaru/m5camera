@@ -143,8 +143,8 @@ byte LINE_Camera(const char *token, const char *message){
        Serial.println();
     #endif
     while (client.available()) {
+        char c = client.read();
         #ifdef DEBUG_HTTPS
-            char c = client.read();
             Serial.write(c);
         #endif
     }
