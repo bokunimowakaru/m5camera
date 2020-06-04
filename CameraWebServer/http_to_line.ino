@@ -60,7 +60,7 @@ curl -X POST -H "Authorization: Bearer token" -F "message=hello" https://notify-
 #define PART_BOUNDARY "123456789000000000000987654321"
 #endif
 
-#define DEBUG_HTTPS
+// #define DEBUG_HTTPS
 
 byte LINE_Camera(const char *token, const char *message){
     int32_t i, len;
