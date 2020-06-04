@@ -52,7 +52,6 @@
     6. [コピー]ボタンでクリップボードへコピー
     7. 下記のLINE_TOKENに貼り付け
  *****************************************************************************/
-
 #define LINE_TOKEN  "your_token"            // LINE Notify 用トークン(★要設定)
 #define MESSAGE_PIR "人感センサが反応しました。"
 #define MESSAGE_CAM "カメラが顔を検知しました。"
@@ -142,6 +141,8 @@ void setup() {
         pir = digitalRead(PIR_GPIO_NUM);
         Serial.printf("%d\n", pir);
     }
+    pinMode(LED_GPIO_NUM, OUTPUT);
+    digitalWrite(LED_GPIO_NUM, HIGH);
     
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
@@ -221,6 +222,7 @@ void setup() {
     TIME=millis();
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
+        if(LED_GPIO_NUM>0) digitalWrite(LED_GPIO_NUM, !digitalRead(LED_GPIO_NUM));
         Serial.print(".");
         if(millis()-TIME>TIMEOUT && strcmp("1234ABCD",WIFI_SSID) == 0){
             WiFi.disconnect();              // WiFiアクセスポイントを切断する
@@ -258,6 +260,7 @@ void setup() {
 
 void loop() {
     uint16_t face = get_face_detected_num();
+    digitalWrite(LED_GPIO_NUM, 0);
     
     /* トリガ①：カメラによる顔検出 */
     if(face_detection_enabled || face_recognition_enabled){
@@ -300,6 +303,7 @@ void loop() {
         face_detection_enabled,face_recognition_enabled,(face),
         udp_sender_enabled,ftp_sender_enabled,line_sender_enabled
     );
+    digitalWrite(LED_GPIO_NUM, !send_c);
     
     /* FTP送信（トリガ発生時） */
     if(ftp_sender_enabled && !send_c ){

@@ -19,6 +19,7 @@
 #define PCLK_GPIO_NUM    22
 
 #define PIR_GPIO_NUM      -1
+#define LED_GPIO_NUM      -1
 
 ////////////////////////////////////////
 #elif defined(CAMERA_MODEL_ESP_EYE)
@@ -41,6 +42,7 @@
 #define PCLK_GPIO_NUM    25
 
 #define PIR_GPIO_NUM     -1
+#define LED_GPIO_NUM      -1
 
 ////////////////////////////////////////
 #elif defined(CAMERA_MODEL_M5STACK_PSRAM)
@@ -63,6 +65,7 @@
 #define PCLK_GPIO_NUM     21
 
 #define PIR_GPIO_NUM      13
+#define LED_GPIO_NUM      14
 
 ////////////////////////////////////////
 #elif defined(CAMERA_MODEL_M5STACK_V2_PSRAM)
@@ -85,6 +88,7 @@
 #define PCLK_GPIO_NUM     21
 
 #define PIR_GPIO_NUM      13
+#define LED_GPIO_NUM      14
 
 ////////////////////////////////////////
 #elif defined(CAMERA_MODEL_M5STACK_WIDE)
@@ -107,6 +111,7 @@
 #define PCLK_GPIO_NUM     21
 
 #define PIR_GPIO_NUM      -1
+#define LED_GPIO_NUM      -1
 
 ////////////////////////////////////////
 #elif defined(CAMERA_MODEL_AI_THINKER)
@@ -129,6 +134,7 @@
 #define PCLK_GPIO_NUM     22
 
 #define PIR_GPIO_NUM      -1
+#define LED_GPIO_NUM      -1
 
 ////////////////////////////////////////
 #elif defined(CAMERA_MODEL_TTGO_T_JOURNAL)
@@ -151,6 +157,7 @@
 #define PCLK_GPIO_NUM     21
 
 #define PIR_GPIO_NUM      -1
+#define LED_GPIO_NUM      -1
 
 ////////////////////////////////////////
 #elif defined(CAMERA_MODEL_TTGO_T_CAMERA)
@@ -173,6 +180,7 @@
 #define PCLK_GPIO_NUM     19
 
 #define PIR_GPIO_NUM      33
+#define LED_GPIO_NUM      -1
 
 ////////////////////////////////////////
 #elif defined(CAMERA_MODEL_TTGO_T_CAMERA_V16)
@@ -195,6 +203,7 @@
 #define PCLK_GPIO_NUM     25
 
 #define PIR_GPIO_NUM      33
+#define LED_GPIO_NUM      -1
 
 ////////////////////////////////////////
 #else
