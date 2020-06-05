@@ -1,6 +1,11 @@
-#include "esp_camera.h"
-#include <WiFi.h>
-#include <WiFiUdp.h>                        // UDP通信を行うライブラリ
+/******************************************************************************
+ CameraWebServerFTP forked by bokunimo.net
+ ******************************************************************************
+ Wi-Fi 搭載カメラ M5Camera が顔を検知した時や人感センサ（PIR Unit）が人体などの
+ 動きを検知したとき、あるいは設定した周期ごとに、写真を撮影し、FTP サーバや、
+ LINE、Windows PC、Raspberry Pi 等へ転送します。
+                                                                 Wataru KUNINO
+ *****************************************************************************/
 
 /******************************************************************************
  カメラ 選択 ※使用するカメラを選択してください。
@@ -47,7 +52,7 @@
     1. https://notify-bot.line.me/ へアクセス
     2. 右上のアカウントメニューから「マイページ」を選択
     3. トークン名「esp32」を入力
-    4. 送信先のトークルームを選択する（「1:1でLINE NOtifyから通知を受け取る」など）
+    4. 送信先のトークルームを選択する（「1:1でLINE Notifyから通知を受け取る」など）
     5. [発行する]ボタンでトークンが発行される
     6. [コピー]ボタンでクリップボードへコピー
     7. 下記のLINE_TOKENに貼り付け
@@ -80,9 +85,26 @@
  *****************************************************************************/
 
 /******************************************************************************
+ 権利情報：このソースコード等には、下記の製作物が含まれます。
+    - Arduino core for the ESP32：
+        Espressif Systems Shanghai,China http://www.espressif.com
+        GNU LESSER GENERAL PUBLIC LICENSE Version 2.1
+    - CameraWebServer (ESP32 sketches examples)：
+        Hristo Gochkov, Ivan Grokhtkov
+        GNU LESSER GENERAL PUBLIC LICENSE Version 2.1
+    - app_httpd.cpp：
+        Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
+        Apache License, Version 2.0
+    - 改変部の著作権は Wataru KUNINO (bokunimo.net) が所有します。
+ *****************************************************************************/
+
+/******************************************************************************
  プログラム部
  *****************************************************************************/
 
+#include "esp_camera.h"
+#include <WiFi.h>
+#include <WiFiUdp.h>                        // UDP通信を行うライブラリ
 #include "camera_pins.h"                    // 選択したカメラの設定値の組込部
 #include "app_httpd.h"                      // カメラ制御用ＩＦ部の組み込み
 
