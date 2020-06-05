@@ -102,9 +102,9 @@
  プログラム部
  *****************************************************************************/
 
-#include "esp_camera.h"
 #include <WiFi.h>
 #include <WiFiUdp.h>                        // UDP通信を行うライブラリ
+#include "esp_camera.h"
 #include "camera_pins.h"                    // 選択したカメラの設定値の組込部
 #include "app_httpd.h"                      // カメラ制御用ＩＦ部の組み込み
 
