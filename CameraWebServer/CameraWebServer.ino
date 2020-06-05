@@ -314,6 +314,7 @@ void loop() {
     if(send_interval && send_c >= send_interval){
         Serial.println("[!] Triggered by Interval Timer");
         if(udp_sender_enabled) sendUdp_Ident();
+        // if(line_sender_enabled) LINE_Camera(LINE_TOKEN, MESSAGE_CAM);
         send_c = 0;
     }
     
