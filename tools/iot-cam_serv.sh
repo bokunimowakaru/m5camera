@@ -47,9 +47,15 @@ while true; do                                      # 永遠に繰り返し
                         CAM=1
                     fi ;;
         "Pong" )    CAM=1 ;;
-        "${DEVICE}" ) IP_CAM=`echo -E $UDP|tr -d ' '|cut -d'/' -f3`
-                    echo "IP_CAM="${IP_CAM}
-                    CAM=1 ;;
+        "${DEVICE}" )
+                    if [ $SECONDS -lt 300 ]; then
+                        IP_CAM=`echo -E $UDP|tr -d ' '|cut -d'/' -f3`
+                        echo "IP_CAM="${IP_CAM}
+                    else
+                        echo "起動後5分を経過したので送信先は更新しません"
+                    fi
+                    CAM=1
+                    ;;
     esac
     if [ ${CAM} -ne 0 ]; then                       # CAMが0で無いとき
         echo -n "wget "${IP_CAM}"/cam.jpg"
