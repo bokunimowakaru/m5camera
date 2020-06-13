@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
+# ヘッダファイルをZIPファイルに変換します（CameraWebServer用）
+# Copyright (c) 2020 Wataru KUNINO
+
 filename = 'camera_index.h'
 camera	 = 'ov2640' # 'ov2640'or 'ov3660'
 saveto	 = 'camera_index_' + camera + '.html.gz'

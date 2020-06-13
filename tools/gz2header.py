@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 # coding: utf-8
 
+# ZIPåœ§ç¸®ã•ã‚ŒãŸãƒ•ã‚¡ã‚¤ãƒ«ã‚’ãƒ˜ãƒƒãƒ€ãƒ•ã‚¡ã‚¤ãƒ«ã«å¤‰æ›ã—ã¾ã™ï¼ˆCameraWebServerç”¨ï¼‰
+# Copyright (c) 2020 Wataru KUNINO
+
 camera	 = 'ov2640' # 'ov2640'or 'ov3660'
 
 filename = '../CameraWebServer/camera_index_'+camera+'.html.gz'
 saveto	 = '../CameraWebServer/camera_index_'+camera+'.h'
 
 from time import sleep
-from sys import argv					# –{ƒvƒƒOƒ‰ƒ€‚Ìˆø”argv‚ğæ“¾‚·‚é
-print(argv[0])							# ƒvƒƒOƒ‰ƒ€–¼‚ğ•\¦‚·‚é
+from sys import argv					# æœ¬ãƒ—ãƒ­ã‚°ãƒ©ãƒ ã®å¼•æ•°argvã‚’å–å¾—ã™ã‚‹
+print(argv[0])							# ãƒ—ãƒ­ã‚°ãƒ©ãƒ åã‚’è¡¨ç¤ºã™ã‚‹
 if len(argv) == 2:
 	filename = argv[1]
 	i = filename.find('.html.gz')
