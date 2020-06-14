@@ -193,7 +193,7 @@ Raspberry Pi 用 FTPサーバは、以下の方法でインストールするこ
 ## Windows 用 FTP サーバ FileZilla Server
 
 Raspberry Pi 用 FTP サーバは、FileZilla Server にて動作確認を行いました。  
-送信先のディレクトリに、チルダ（ホーム）が使えないので、CameraWebServer.ino の「#define FTP_DIR "~/"」のチルダ(~)を削除してください。  
+送信先のディレクトリに、チルダ（ホーム）が使えないので、CameraWebServer.ino の「#define FTP_DIR "\~/"」のチルダ(\~)を削除してください。  
 
 	(変更前)
 	#define FTP_DIR  "~/"                       // FTP ディレクトリ(Raspberry Pi等)
