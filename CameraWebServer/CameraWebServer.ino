@@ -69,6 +69,18 @@
 #define DEVICE_PIR  "pir_s_5,"              // デバイス名(人感センサ)
 
 /******************************************************************************
+ DEEP SLEEP 設定
+ 
+ SLEEP_P 0ul                                // 無効
+ SLEEP_P 50*1000000ul                       // スリープ時間 50秒
+ SLEEP_P 290*1000000ul                      // スリープ時間 約5分(290秒)
+ SLEEP_P 590*1000000ul                      // スリープ時間 約10分(590秒)
+ SLEEP_P 1790*1000000ul                     // スリープ時間 約30分(1790秒)
+ SLEEP_P 3590*1000000ul                     // スリープ時間 約60分(3590秒)
+ *****************************************************************************/
+#define SLEEP_P 0ul                         // 無効
+
+/******************************************************************************
  コンパイル方法
  ******************************************************************************
  Arduino IDEと arduino-esp32 をインストールし、組み込んでコンパイルを行います。
@@ -104,6 +116,7 @@
 
 #include <WiFi.h>
 #include <WiFiUdp.h>                        // UDP通信を行うライブラリ
+#include "esp_sleep.h"                      // ESP32用Deep Sleep ライブラリ
 #include "esp_camera.h"
 #include "camera_pins.h"                    // 選択したカメラの設定値の組込部
 #include "app_httpd.h"                      // カメラ制御用ＩＦ部の組み込み
@@ -146,6 +159,20 @@ void sendUdp_Ident(){
     sendUdp_Fd(0);
 }
 
+void deepsleep(uint32_t us){
+    Serial.printf("Going to sleep for %d seconds in 3 seconds\n",(int)(us / 1000000ul));
+    delay(200);                             // 送信待ち時間
+    for(int i = 2; i >= 0 ; i--){           // HTTPアクセス待ち時間
+        for(int j=0;j<10;j++){
+            delay(100);   // 100ms * 10 = 1秒の待ち時間
+            if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, j % 2);
+        }
+        Serial.println(i);
+    }
+    if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, LOW);
+    esp_deep_sleep(us);                     // Deep Sleepモードへ移行
+    while(1) delay(100);
+}
 void setup() {
     esp_efuse_mac_get_default(MAC);
     Serial.begin(115200);
@@ -163,8 +190,10 @@ void setup() {
         pir = digitalRead(PIR_GPIO_NUM);
         Serial.printf("%d\n", pir);
     }
-    pinMode(LED_GPIO_NUM, OUTPUT);
-    digitalWrite(LED_GPIO_NUM, HIGH);
+    if(LED_GPIO_NUM){
+        pinMode(LED_GPIO_NUM, OUTPUT);
+        digitalWrite(LED_GPIO_NUM, HIGH);
+    }
     
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
@@ -243,22 +272,25 @@ void setup() {
     WiFi.begin(WIFI_SSID, WIFI_PASSWD);
     TIME=millis();
     while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        if(LED_GPIO_NUM>0) digitalWrite(LED_GPIO_NUM, !digitalRead(LED_GPIO_NUM));
+        delay(200);
+        if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, !digitalRead(LED_GPIO_NUM));
         Serial.print(".");
-        if(millis()-TIME>TIMEOUT && strcmp("1234ABCD",WIFI_SSID) == 0){
-            WiFi.disconnect();              // WiFiアクセスポイントを切断する
-            Serial.println("\nWi-Fi AP Mode");// 接続が出来なかったときの表示
-            char s[22];
-            sprintf(s,"M5CAM_%02X%02X",MAC[4],MAC[5]);
-            WiFi.mode(WIFI_AP); delay(100); // 無線LANを【AP】モードに設定
-            WiFi.softAP(s);                 // ソフトウェアAPの起動
-            WiFi.softAPConfig(
-                IPAddress(192,168,4,1),     // AP側の固定IPアドレスの設定
-                IPAddress(0,0,0,0),         // 本機のゲートウェイアドレスの設定
-                IPAddress(255,255,255,0)    // ネットマスクの設定
-            );
-            wifi_mode = 0;
+        if(millis()-TIME>TIMEOUT){
+            if(strcmp("1234ABCD",WIFI_SSID) == 0){
+                WiFi.disconnect();              // WiFiアクセスポイントを切断する
+                Serial.println("\nWi-Fi AP Mode");// 接続が出来なかったときの表示
+                char s[22];
+                sprintf(s,"M5CAM_%02X%02X",MAC[4],MAC[5]);
+                WiFi.mode(WIFI_AP); delay(100); // 無線LANを【AP】モードに設定
+                WiFi.softAP(s);                 // ソフトウェアAPの起動
+                WiFi.softAPConfig(
+                    IPAddress(192,168,4,1),     // AP側の固定IPアドレスの設定
+                    IPAddress(0,0,0,0),         // 本機のゲートウェイアドレスの設定
+                    IPAddress(255,255,255,0)    // ネットマスクの設定
+                );
+                wifi_mode = 0;
+            }else if(SLEEP_P != 0) deepsleep(SLEEP_P);
+            else deepsleep(10 * 1000000ul);
             break;
         }
     }
@@ -282,7 +314,7 @@ void setup() {
 
 void loop() {
     uint16_t face = get_face_detected_num();
-    digitalWrite(LED_GPIO_NUM, 0);
+    if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, 0);
     
     /* トリガ①：カメラによる顔検出 */
     if(face_detection_enabled || face_recognition_enabled){
@@ -326,7 +358,7 @@ void loop() {
         face_detection_enabled,face_recognition_enabled,(face),
         udp_sender_enabled,ftp_sender_enabled,line_sender_enabled
     );
-    digitalWrite(LED_GPIO_NUM, !send_c);
+    if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, !send_c);
     
     /* FTP送信（トリガ発生時） */
     if(ftp_sender_enabled && !send_c ){
@@ -355,4 +387,5 @@ void loop() {
 
     delay(1000 - (send_c ? 0 : 200) - (face ? 200 : 0));
     if(send_interval) send_c++; else send_c = 1;
+    if(SLEEP_P != 0) deepsleep(SLEEP_P);
 }
