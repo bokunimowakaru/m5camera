@@ -70,15 +70,15 @@
 
 /******************************************************************************
  DEEP SLEEP 設定
- 
- SLEEP_P 0ul                                // 無効
- SLEEP_P 50*1000000ul                       // スリープ時間 50秒
- SLEEP_P 290*1000000ul                      // スリープ時間 約5分(290秒)
- SLEEP_P 590*1000000ul                      // スリープ時間 約10分(590秒)
- SLEEP_P 1790*1000000ul                     // スリープ時間 約30分(1790秒)
- SLEEP_P 3590*1000000ul                     // スリープ時間 約60分(3590秒)
  *****************************************************************************/
-#define SLEEP_P 0ul                         // 無効
+// SLEEP_P 0ul                              // 無効
+// SLEEP_P 50*1000000ul                     // スリープ時間 50秒
+// SLEEP_P 290*1000000ul                    // スリープ時間 約5分(290秒)
+// SLEEP_P 590*1000000ul                    // スリープ時間 約10分(590秒)
+// SLEEP_P 1790*1000000ul                   // スリープ時間 約30分(1790秒)
+// SLEEP_P 3590*1000000ul                   // スリープ時間 約60分(3590秒)
+#define SLEEP_P    0ul                      // 無効
+#define SLEEP_WAIT 0                        // スリープ遅延 0秒
 
 /******************************************************************************
  コンパイル方法
@@ -160,19 +160,21 @@ void sendUdp_Ident(){
 }
 
 void deepsleep(uint32_t us){
-    Serial.printf("Going to sleep for %d seconds in 3 seconds\n",(int)(us / 1000000ul));
-    delay(200);                             // 送信待ち時間
-    for(int i = 2; i >= 0 ; i--){           // HTTPアクセス待ち時間
+    Serial.printf("Going to sleep for %d seconds in %d seconds\n",(int)(us / 1000000ul),SLEEP_WAIT);
+    for(int i = SLEEP_WAIT; i >= 0 ; i--){  // HTTPアクセス待ち時間
         for(int j=0;j<10;j++){
-            delay(100);   // 100ms * 10 = 1秒の待ち時間
+            delay(100);                     // 100ms * 10 = 1秒の待ち時間
             if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, j % 2);
         }
         Serial.println(i);
     }
-    if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, LOW);
+    if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, HIGH);
+    Serial.println("zzz...");
+    delay(102);                             // 送信待ち時間
     esp_deep_sleep(us);                     // Deep Sleepモードへ移行
     while(1) delay(100);
 }
+
 void setup() {
     esp_efuse_mac_get_default(MAC);
     Serial.begin(115200);
@@ -180,19 +182,21 @@ void setup() {
     Serial.println("\nM5Camera started");
     Serial.printf("MAC Address = %02x:%02x:%02x:%02x:%02x:%02x\n",MAC[0],MAC[1],MAC[2],MAC[3],MAC[4],MAC[5]);
 
+    // LED ON
+    if(LED_GPIO_NUM){
+        pinMode(LED_GPIO_NUM, OUTPUT);
+        digitalWrite(LED_GPIO_NUM, LOW);
+    }
+    
     // 人感センサ
     if(PIR_GPIO_NUM > 0){
         pinMode(PIR_GPIO_NUM, INPUT_PULLUP);
         Serial.printf("PIR = %d, ", digitalRead(PIR_GPIO_NUM));
         delay(100);
         Serial.printf("%d, ", digitalRead(PIR_GPIO_NUM));
-        delay(2000 * digitalRead(PIR_GPIO_NUM));
+        if(SLEEP_P == 0) delay(2000 * digitalRead(PIR_GPIO_NUM));
         pir = digitalRead(PIR_GPIO_NUM);
         Serial.printf("%d\n", pir);
-    }
-    if(LED_GPIO_NUM){
-        pinMode(LED_GPIO_NUM, OUTPUT);
-        digitalWrite(LED_GPIO_NUM, HIGH);
     }
     
     camera_config_t config;
