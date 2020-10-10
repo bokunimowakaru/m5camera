@@ -70,15 +70,20 @@
 
 /******************************************************************************
  DEEP SLEEP 設定
+ ******************************************************************************
+ バッテリ(M5Stack Battery Support Base 400mAh)動作時の間欠動作用に設定します。
+ 約10分間隔のときの動作時間(実測)：19.5時間（10/09 12:45:59～10/10 08:18:50）
+ ※ PWDN_GPIO_NUM<0 のデバイスはカメラをOFFできない。
  *****************************************************************************/
 // SLEEP_P 0ul                              // 無効
-// SLEEP_P 50*1000000ul                     // スリープ時間 50秒
-// SLEEP_P 290*1000000ul                    // スリープ時間 約5分(290秒)
-// SLEEP_P 590*1000000ul                    // スリープ時間 約10分(590秒)
-// SLEEP_P 1790*1000000ul                   // スリープ時間 約30分(1790秒)
-// SLEEP_P 3590*1000000ul                   // スリープ時間 約60分(3590秒)
+// SLEEP_P 56*1000000ul                     // スリープ時間 56秒
+// SLEEP_P 296*1000000ul                    // スリープ時間 約5分(296秒)
+// SLEEP_P 596*1000000ul                    // スリープ時間 約10分(596秒)
+// SLEEP_P 1796*1000000ul                   // スリープ時間 約30分(1796秒)
+// SLEEP_P 3596*1000000ul                   // スリープ時間 約60分(3596秒)
 #define SLEEP_P    0ul                      // 無効
-#define SLEEP_WAIT 0                        // スリープ遅延 0秒
+#define SLEEP_WAIT 0.0                      // スリープ遅延 0.0秒
+#define SLEEP_P    55*1000000ul                      // 無効◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆◆
 
 /******************************************************************************
  コンパイル方法
@@ -160,17 +165,24 @@ void sendUdp_Ident(){
 }
 
 void deepsleep(uint32_t us){
-    Serial.printf("Going to sleep for %d seconds in %d seconds\n",(int)(us / 1000000ul),SLEEP_WAIT);
-    for(int i = SLEEP_WAIT; i >= 0 ; i--){  // HTTPアクセス待ち時間
-        for(int j=0;j<10;j++){
+    Serial.printf("Going to sleep for %d seconds in %.1f seconds\n",(int)(us / 1000000ul),SLEEP_WAIT);
+    if(PWDN_GPIO_NUM < 0) Serial.println(",but the camera module will be eating.");
+    for(int i = (int)SLEEP_WAIT; i >= 0 ; i--){   // HTTPアクセス待ち時間
+        int stop = 10;
+        if(i == 0){
+            stop = (int)(SLEEP_WAIT * 10) % 10;
+        }
+        for(int j=0;j<stop;j++){
+            Serial.print('.');
             delay(100);                     // 100ms * 10 = 1秒の待ち時間
             if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, j % 2);
         }
-        Serial.println(i);
+        Serial.printf(" in %d seconds\n",i);
     }
     if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, HIGH);
     Serial.println("zzz...");
     delay(102);                             // 送信待ち時間
+    esp_camera_deinit();
     esp_deep_sleep(us);                     // Deep Sleepモードへ移行
     while(1) delay(100);
 }
