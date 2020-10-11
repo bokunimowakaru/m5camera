@@ -1,22 +1,33 @@
 #!/bin/bash
 
-# ŽB‰e‚µ‚½JPEGƒtƒ@ƒCƒ‹‚ð H.264Œ`Ž®‚Ì“®‰æ‚É•ÏŠ·‚µ‚Ü‚·B
+# æ’®å½±ã—ãŸJPEGãƒ•ã‚¡ã‚¤ãƒ«ã‚’ H.264å½¢å¼ã®å‹•ç”»ã«å¤‰æ›ã—ã¾ã™ã€‚
 
-ls -1 photo/*.jpg > list_.txt
+PHOTO_DIR="photo"                           # JPEGãƒ•ã‚¡ã‚¤ãƒ«
+SAVETO=""                                   # ä¿å­˜å…ˆï¼ˆãƒ­ãƒ¼ã‚«ãƒ«ï¼‰
+PHOTO_DIR_Alt="/mnt/ssd1/minidlna/pictures" # JPEGãƒ•ã‚¡ã‚¤ãƒ«
+SAVETO_Alt="/mnt/ssd1/minidlna/videos/"     # ä¿å­˜å…ˆï¼ˆSSDï¼‰
+DATE=`date "+%Y%m%d-%H%M%S"`                # å¤‰æ›æ—¥æ™‚
+
+ls -1 ${PHOTO_DIR}/*.jpg > list_.txt
 if [ $? -ne 0 ]; then
-	echo "ERROR: no photo files."
-	exit
+    ls -1 ${PHOTO_DIR2}/*.jpg > list_.txt
+    if [ $? -ne 0 ]; then
+        echo "ERROR: no photo files."
+        exit
+    fi
+    PHOTO_DIR=${PHOTO_DIR_Alt}
+    SAVETO=${SAVETO_Alt}
 fi
-mkdir -p photo/tmp_
+mkdir -p ${PHOTO_DIR}/tmp_
 i=0
 cat list_.txt | while read line
 do
-	n=`printf {"%04d",$i}`
-	echo $n: $line
-	cp $line photo/tmp_/img${n}.jpg
-	i=$((i + 1))
+    n=`printf {"%04d",$i}`
+    echo $n: $line
+    cp $line ${PHOTO_DIR}/tmp_/img${n}.jpg
+    i=$((i + 1))
 done
-ffmpeg -r 15 -vcodec mjpeg -i photo/tmp_/img%04d.jpg -vcodec libx264 out.mp4
-rm -Rf photo/tmp_
+ffmpeg -r 15 -vcodec mjpeg -i ${PHOTO_DIR}/tmp_/img%04d.jpg -vcodec libx264 ${SAVETO}cam_${DATE}.mp4
+rm -Rf ${PHOTO_DIR}/tmp_
 rm list_.txt
 echo "Done"

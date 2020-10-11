@@ -21,7 +21,6 @@ if [ ${#} = 1 ]; then                               # 入力パラメータ数�
     fi                                              # ifの終了
 fi                                                  # ifの終了
 echo "Listening UDP port "${PORT}"..."              # ポート番号表示
-mkdir photo >& /dev/null                            # 写真保存用フォルダ作成
 while true                                          # 永遠に
 do                                                  # 繰り返し
     UDP=`nc -luw0 ${PORT}|tr -d [:cntrl:]|\
