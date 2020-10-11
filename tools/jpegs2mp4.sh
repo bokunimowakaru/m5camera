@@ -10,7 +10,7 @@ DATE=`date "+%Y%m%d-%H%M%S"`                # 変換日時
 
 ls -1 ${PHOTO_DIR}/*.jpg > list_.txt
 if [ $? -ne 0 ]; then
-    ls -1 ${PHOTO_DIR2}/*.jpg > list_.txt
+    ls -1 ${PHOTO_DIR_Alt}/*.jpg > list_.txt
     if [ $? -ne 0 ]; then
         echo "ERROR: no photo files."
         exit
