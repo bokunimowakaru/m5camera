@@ -3,31 +3,32 @@
 # 撮影したJPEGファイルを H.264形式の動画に変換します。
 
 PHOTO_DIR="photo"                           # JPEGファイル
-SAVETO=""                                   # 保存先（ローカル）
+SAVETO=`pwd`                                # 保存先（ローカル）
 PHOTO_DIR_Alt="/mnt/ssd1/minidlna/pictures" # JPEGファイル
-SAVETO_Alt="/mnt/ssd1/minidlna/videos/"     # 保存先（SSD）
+SAVETO_Alt="/mnt/ssd1/minidlna/videos"      # 保存先（SSD）
 DATE=`date "+%Y%m%d-%H%M%S"`                # 変換日時
 
-ls -1 ${PHOTO_DIR}/*.jpg > list_.txt
+cd ${PHOTO_DIR}
 if [ $? -ne 0 ]; then
-    ls -1 ${PHOTO_DIR_Alt}/*.jpg > list_.txt
+    cd ${PHOTO_DIR_Alt}
     if [ $? -ne 0 ]; then
-        echo "ERROR: no photo files."
+        echo "ERROR: no photo dirs."
         exit
     fi
     PHOTO_DIR=${PHOTO_DIR_Alt}
     SAVETO=${SAVETO_Alt}
 fi
-mkdir -p ${PHOTO_DIR}/tmp_
+mkdir -p tmp_
+ls -1 *.jpg > tmp_/list.txt
+
 i=0
-cat list_.txt | while read line
+cat tmp_/list.txt | while read line
 do
     n=`printf {"%04d",$i}`
     echo $n: $line
-    cp $line ${PHOTO_DIR}/tmp_/img${n}.jpg
+    ln -s ../${line} tmp_/img${n}.jpg
     i=$((i + 1))
 done
-ffmpeg -r 15 -vcodec mjpeg -i ${PHOTO_DIR}/tmp_/img%04d.jpg -vcodec libx264 ${SAVETO}cam_${DATE}.mp4
-rm -Rf ${PHOTO_DIR}/tmp_
-rm list_.txt
+ffmpeg -r 15 -vcodec mjpeg -i tmp_/img%04d.jpg -vcodec libx264 ${SAVETO}/cam_${DATE}.mp4
+rm -Rf tmp_
 echo "Done"
