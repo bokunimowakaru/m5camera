@@ -29,11 +29,15 @@ do                                                  # 繰り返し
     DEV=${UDP#,*}                                   # デバイス名を取得(前方)
     DEV=${DEV%%,*}                                  # デバイス名を取得(後方)
     if [ ${DEVICE1} = ${DEV} ]; then                # 対象機器(カメラ)の時
+        IP=`echo -E $UDP|tr -d ' '|cut -d'/' -f3`   # IPアドレスを保持
         if [ $SECONDS -lt 300 ]; then
-            IP_CAM=`echo -E $UDP|tr -d ' '|cut -d'/' -f3`   # IPアドレスを保持
+            IP_CAM=${IP}
             echo "IP_CAM="${IP_CAM}
         else
-            echo "起動後5分を経過したので送信先は更新しません"
+            if [ "${IP}" != "${IP_CAM}" ]; then
+                echo "起動後5分を経過したので送信先は更新しません"
+                continue
+            fi
         fi
     fi
     if [ ${DEVICE1} = ${DEV} ] || [ ${DEVICE2} = ${DEV} ]; then # 対象機器の時
