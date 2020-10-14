@@ -143,8 +143,6 @@ int         wifi_mode;                      // Wi-Fiモード 0:親機AP 1:子�
 byte        MAC[6];                         // 本機MACアドレス
 unsigned long TIME = 0;                     // タイマー用変数
 
-esp_err_t cameraMyConfig(int);              // カメラ初期化用の関数の宣言
-
 void sendUdp(String dev, String S){
     WiFiUDP udp;                            // UDP通信用のインスタンスを定義
     udp.beginPacket(IP_BROAD, PORT);        // UDP送信先を設定
