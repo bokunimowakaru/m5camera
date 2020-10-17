@@ -118,6 +118,7 @@
  プログラム部
  *****************************************************************************/
 
+#include <SPIFFS.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>                        // UDP通信を行うライブラリ
 #include "esp_sleep.h"                      // ESP32用Deep Sleep ライブラリ
@@ -125,6 +126,7 @@
 #include "camera_pins.h"                    // 選択したカメラの設定値の組込部
 #include "app_httpd.h"                      // カメラ制御用ＩＦ部の組み込み
 
+char        CONFIGFILE[] = "/camset.txt";   // 設定ファイルの保存名(SPIFFS)
 int         FileNumMax = 16;                // FTP 保存先の最大ファイル数
 int         FileNum = 1;                    // 現在のファイル番号
 boolean     FileNumOVF = false;             // オーバーフロー用フラグ
@@ -137,6 +139,7 @@ int8_t      line_sender_enabled = 1;        // LINE HTTP 送信無効=0,有効=1
 int16_t     send_interval = 30;             // 送信間隔（秒）
 IPAddress   IP_LOCAL;                       // 本機のIPアドレス
 IPAddress   IP_BROAD;                       // ブロードキャストIPアドレス
+int         wake;                           // 起動モード(TimerWakeUp受取用)
 int         pir;                            // 人感センサ値
 int         send_c = 0;                     // ソフト・タイマー用カウンタ
 int         wifi_mode;                      // Wi-Fiモード 0:親機AP 1:子機STA
@@ -188,11 +191,12 @@ void deepsleep(uint32_t us){
 
 void setup() {
     esp_efuse_mac_get_default(MAC);
+    pinMode(0, INPUT_PULLUP);
     Serial.begin(115200);
     Serial.setDebugOutput(true);
     Serial.println("\nM5Camera started");
     Serial.printf("MAC Address = %02x:%02x:%02x:%02x:%02x:%02x\n",MAC[0],MAC[1],MAC[2],MAC[3],MAC[4],MAC[5]);
-    int wake = TimerWakeUp_init();
+    wake = TimerWakeUp_init();
 
     // LED ON
     if(LED_GPIO_NUM){
@@ -210,6 +214,14 @@ void setup() {
         pir = digitalRead(PIR_GPIO_NUM);
         Serial.printf("%d\n", pir);
     }
+    
+    // SPIFFS
+    if( ( !SPIFFS.begin() || !digitalRead(0) ) && wake == 0 ){  // ファイルシステムSPIFFSの開始
+        Serial.println("Formating SPIFFS.");
+        SPIFFS.format();
+        SPIFFS.begin(); // エラー時にSPIFFSを初期化
+    }
+    
     cameraMyConfig();
 
     Serial.println("Starting Wi-Fi");
@@ -218,13 +230,14 @@ void setup() {
     WiFi.mode(WIFI_STA);
     wifi_mode = 1;
     WiFi.begin(WIFI_SSID, WIFI_PASSWD);
-    TIME=millis();
+    TIME = millis();
     while (WiFi.status() != WL_CONNECTED) {
         delay(200);
         if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, !digitalRead(LED_GPIO_NUM));
         Serial.print(".");
-        if(millis()-TIME>TIMEOUT){
-            if(strcmp("1234ABCD",WIFI_SSID) == 0){
+        if(millis() - TIME > TIMEOUT){
+            // AP起動条件：SSIDが初期値 かつ 電源orリセット起動時(割り込み起動時除く)
+            if(strcmp("1234ABCD",WIFI_SSID) == 0 || wake == 0){
                 WiFi.disconnect();              // WiFiアクセスポイントを切断する
                 Serial.println("\nWi-Fi AP Mode");// 接続が出来なかったときの表示
                 char s[22];
@@ -257,7 +270,9 @@ void setup() {
     sendUdp_Ident();
     
     if(strcmp("your_token",LINE_TOKEN) != 0) line_sender_enabled = 1;
+    else                                     line_sender_enabled = 0;
     if(strcmp("your_password",FTP_PASS) != 0) ftp_sender_enabled = 1;
+    else                                      ftp_sender_enabled = 0;
 }
 
 void loop() {
@@ -300,14 +315,16 @@ void loop() {
     
     /* 状態をシリアル出力 */
     Serial.printf(
-        "%04d/%04d, pir:%d,(%d), face:%d,%d,(%d), udp:%d, ftp:%d, line:%d\n",
+        "%04d/%04d, pir:%d,(%d), face:%d,%d,(%d), udp:%d, ftp:%d, line:%d",
         send_c,send_interval,
         pir_enabled,(pir),
         face_detection_enabled,face_recognition_enabled,(face),
         udp_sender_enabled,ftp_sender_enabled,line_sender_enabled
     );
     if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, !send_c);
-    
+    if(wake) Serial.printf(", wake:%d", wake);
+    if(!wifi_mode) Serial.printf(", ap_mode:%d", (int)(TIME-millis())/1000+600);
+    Serial.println();
     /* FTP送信（トリガ発生時） */
     if(ftp_sender_enabled && !send_c ){
         int len = strlen(Filename);
@@ -333,7 +350,12 @@ void loop() {
         } else Serial.printf("ERROR: length of Filename %d\n",len);
     }
 
-    delay(1000 - (send_c ? 0 : 200) - (face ? 200 : 0));
+    int waiting = 1000 - (send_c ? 0 : 200) - (face ? 200 : 0);
+    for(int i = 0; i < waiting / 100; i++){
+        if(LED_GPIO_NUM && !wifi_mode) digitalWrite(LED_GPIO_NUM, !digitalRead(LED_GPIO_NUM));
+        delay(100);
+    }
     if(send_interval) send_c++; else send_c = 1;
     if(SLEEP_P != 0) deepsleep(SLEEP_P);
+    if(!wifi_mode && millis() - TIME > 600000ul) deepsleep(600*1000000ul); // AP10分経過
 }

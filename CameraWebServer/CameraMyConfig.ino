@@ -1,3 +1,14 @@
+#include <SPIFFS.h>
+extern char CONFIGFILE[];
+extern int wake;
+extern int8_t face_detection_enabled;
+extern int8_t face_recognition_enabled;
+extern int8_t pir_enabled;
+extern int8_t udp_sender_enabled;
+extern int8_t ftp_sender_enabled;
+extern int8_t line_sender_enabled;
+extern int16_t send_interval;
+
 esp_err_t cameraMyConfig(){
     camera_config_t config;
     config.ledc_channel = LEDC_CHANNEL_0;
@@ -68,13 +79,14 @@ esp_err_t cameraMyConfig(){
     s->set_hmirror(s, 1);
 #endif
 
-    if(SLEEP_P > 0){   // Deep Sleep 設定時
-        Serial.println("Camera, Switched Off Auto Modes");
-        s->set_whitebal(s, 0);          // AWB
-        s->set_awb_gain(s, 0);          // AWB_Gain
-        s->set_exposure_ctrl(s, 0);     // AEC
-        s->set_aec2(s, 0);              // AEC DSP
-        s->set_gain_ctrl(s, 0);         // AGC
+    if(SPIFFS.exists(CONFIGFILE)){
+        File file = SPIFFS.open(CONFIGFILE,"r");
+        if(file){
+            Serial.printf("Loading %s(%d bytes)\n",CONFIGFILE,sizeof(sensor_t));
+            file.read((byte *)s, sizeof(sensor_t));
+            file.close();
+            printCamStatus(s);	// app_httpd.h
+        }
     }
     return ESP_OK;
 }

@@ -1,3 +1,19 @@
+/******************************************************************************
+ CameraWebServerFTP forked by bokunimo.net
+                                                                 Wataru KUNINO
+ ******************************************************************************
+// 元のコードのライセンスは下記の通りです。
+// https://github.com/espressif/arduino-esp32/blob/master/libraries/ESP32/examples/Camera/CameraWebServer/app_httpd.cpp
+* app_httpd.cpp：  
+    Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD  
+    Apache License, Version 2.0  
+
+## 改変部の著作権は 国野 亘 が所有します。Copyright 2019-2020 Wataru KUNINO  
+    ソースコードやコンテンツのフォルダなどにライセンス表示が無い著作物については、
+    Arduino core for the ESP32 と同じライセンス形態とします。  
+    GNU Lesser General Public License v2.1
+ *****************************************************************************/
+
 // Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +28,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <SPIFFS.h>
 #include "esp_http_server.h"
 #include "esp_timer.h"
 #include "esp_camera.h"
@@ -64,6 +81,7 @@ httpd_handle_t stream_httpd = NULL;
 httpd_handle_t camera_httpd = NULL;
 
 static mtmn_config_t mtmn_config = {0};
+extern char CONFIGFILE[];
 extern int8_t face_detection_enabled;
 extern int8_t face_recognition_enabled;
 static int8_t is_enrolling = 0;
@@ -234,7 +252,7 @@ static size_t jpg_encode_stream(void * arg, size_t index, const void* data, size
     return len;
 }
 
-esp_err_t capture_face(){	// capture_handlerからhttpd_req_tを削除 
+esp_err_t capture_face(){   // capture_handlerからhttpd_req_tを削除 
                             // capture_handlerをNull入力に修正予定
     camera_fb_t * fb = NULL;
     esp_err_t res = ESP_OK;
@@ -545,8 +563,12 @@ static esp_err_t cmd_handler(httpd_req_t *req){
     char value[32] = {0,};
 
     buf_len = httpd_req_get_url_query_len(req) + 1;
+    if(buf_len > 128){
+        Serial.printf("ERROR: buf_len (%d)\n",buf_len);
+        return ESP_FAIL;
+    }
     if (buf_len > 1) {
-        buf = (char*)malloc(buf_len);
+        buf = (char*)malloc(buf_len); // MALLOC /////////////
         if(!buf){
             httpd_resp_send_500(req);
             return ESP_FAIL;
@@ -569,9 +591,11 @@ static esp_err_t cmd_handler(httpd_req_t *req){
         httpd_resp_send_404(req);
         return ESP_FAIL;
     }
+    Serial.printf("cmd_handler: {\"%s\",\"%s\"}\n",variable,value);
+    delay(1);
 
     int val = atoi(value);
-    sensor_t * s = esp_camera_sensor_get();
+    sensor_t *s = esp_camera_sensor_get();
     int res = 0;
 
     if(!strcmp(variable, "framesize")) {
@@ -633,15 +657,20 @@ static esp_err_t cmd_handler(httpd_req_t *req){
     }
 
     if(res){
+        Serial.printf("ERROR: sensor_t.set_dcw (%d)\n",res);
         return httpd_resp_send_500(req);
     }
 
+//  Serial.printf("DEBUG1: sensor_t.set_dcw (%d)\n",res);
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
-    return httpd_resp_send(req, NULL, 0);
+//  Serial.printf("DEBUG2: \n");
+    httpd_resp_send(req, NULL, 0);
+//  Serial.printf("DEBUG3: \n");
+    return ESP_OK;
 }
 
 static esp_err_t status_handler(httpd_req_t *req){
-    static char json_response[1024];
+    static char json_response[512];
 
     sensor_t * s = esp_camera_sensor_get();
     char * p = json_response;
@@ -674,14 +703,18 @@ static esp_err_t status_handler(httpd_req_t *req){
     p+=sprintf(p, "\"colorbar\":%u,", s->status.colorbar);
     p+=sprintf(p, "\"face_detect\":%u,", face_detection_enabled);
     p+=sprintf(p, "\"face_enroll\":%u,", is_enrolling);
-    p+=sprintf(p, "\"face_recognize\":%u", face_recognition_enabled);
+    p+=sprintf(p, "\"face_recognize\":%u,", face_recognition_enabled);
     p+=sprintf(p, "\"pir_sensor\":%u,", pir_enabled);
     p+=sprintf(p, "\"udp_sender\":%u,", udp_sender_enabled);
     p+=sprintf(p, "\"ftp_sender\":%u,", ftp_sender_enabled);
     p+=sprintf(p, "\"line_sender\":%u,", line_sender_enabled);
-    p+=sprintf(p, "\"send_interval\":%d,", send_interval);
+    p+=sprintf(p, "\"send_interval\":%d", send_interval);   // 最後なのでカンマ無し
     *p++ = '}';
     *p++ = 0;
+    int len = (int)p - (int)json_response;
+    if(len >= 496){
+        Serial.printf("WARNING: json_response used bytes (max 512 bytes)",len);
+    }
     httpd_resp_set_type(req, "application/json");
     httpd_resp_set_hdr(req, "Access-Control-Allow-Origin", "*");
     return httpd_resp_send(req, json_response, strlen(json_response));
@@ -699,6 +732,99 @@ static esp_err_t index_handler(httpd_req_t *req){
         #endif
     }
     return httpd_resp_send(req, (const char *)index_ov2640_html_gz, index_ov2640_html_gz_len);
+}
+
+void printCamStatus(sensor_t *s){
+	int res = 0;
+    Serial.printf("\"framesize\"     :%u\n", s->status.framesize);
+//  res |= s->set_framesize(s, (framesize_t)s->status.framesize);
+    Serial.printf("\"quality\"       :%u\n", s->status.quality);
+//  res |= s->set_quality(s, s->status.quality);
+    Serial.printf("\"brightness\"    :%d\n", s->status.brightness);
+//  res |= s->set_brightness(s, s->status.brightness);
+    Serial.printf("\"contrast\"      :%d\n", s->status.contrast);
+//  res |= s->set_contrast(s, s->status.contrast);
+    Serial.printf("\"saturation\"    :%d\n", s->status.saturation);
+//  res |= s->set_saturation(s, s->status.saturation);
+    Serial.printf("\"sharpness\"     :%d\n", s->status.sharpness);
+//  res |= s->set_sharpness(s, s->status.sharpness);
+    Serial.printf("\"special_effect\":%u\n", s->status.special_effect);
+//  res |= s->set_special_effect(s, s->status.special_effect);
+    Serial.printf("\"wb_mode\"       :%u\n", s->status.wb_mode);
+//  res |= s->set_wb_mode(s, s->status.wb_mode);
+    Serial.printf("\"awb\"           :%u\n", s->status.awb);
+//  res |= s->set_whitebal(s, s->status.awb);
+    Serial.printf("\"awb_gain\"      :%u\n", s->status.awb_gain);
+//  res |= s->set_awb_gain(s, s->status.awb_gain);
+    Serial.printf("\"aec\"           :%u\n", s->status.aec);
+//  res |= s->set_exposure_ctrl(s, s->status.aec);
+    Serial.printf("\"aec2\"          :%u\n", s->status.aec2);
+//  res |= s->set_aec2(s, s->status.aec2);
+    Serial.printf("\"ae_level\"      :%d\n", s->status.ae_level);
+//  res |= s->set_ae_level(s, s->status.ae_level);
+    Serial.printf("\"aec_value\"     :%u\n", s->status.aec_value);
+//  res |= s->set_aec_value(s, s->status.aec_value);
+    Serial.printf("\"agc\"           :%u\n", s->status.agc);
+//  res |= s->set_gain_ctrl(s, s->status.agc);
+    Serial.printf("\"agc_gain\"      :%u\n", s->status.agc_gain);
+//  res |= s->set_agc_gain(s, s->status.agc_gain);
+    Serial.printf("\"gainceiling\"   :%u\n", s->status.gainceiling);
+//  res |= s->set_gainceiling(s, (gainceiling_t)s->status.gainceiling);
+    Serial.printf("\"bpc\"           :%u\n", s->status.bpc);
+//  res |= s->set_bpc(s, s->status.bpc);
+    Serial.printf("\"wpc\"           :%u\n", s->status.wpc);
+//  res |= s->set_wpc(s, s->status.wpc);
+    Serial.printf("\"raw_gma\"       :%u\n", s->status.raw_gma);
+//  res |= s->set_raw_gma(s, s->status.raw_gma);
+    Serial.printf("\"lenc\"          :%u\n", s->status.lenc);
+//  res |= s->set_lenc(s, s->status.lenc);
+    Serial.printf("\"vflip\"         :%u\n", s->status.vflip);
+//  res |= s->set_vflip(s, s->status.vflip);
+    Serial.printf("\"hmirror\"       :%u\n", s->status.hmirror);
+//  res |= s->set_hmirror(s, s->status.hmirror);
+    Serial.printf("\"dcw\"           :%u\n", s->status.dcw);
+//  res |= s->set_dcw(s, s->status.dcw);
+    Serial.printf("\"colorbar\"      :%u\n", s->status.colorbar);
+//  res |= s->set_colorbar(s, s->status.colorbar);
+    Serial.println();
+    if(res){
+		Serial.printf("ERROR: setting(%d), in printCamStatus\n",res);
+	}
+    /* 今回のバージョンでは保存しない
+    Serial.printf("\"face_detect\"   :%u\n", face_detection_enabled);
+    Serial.printf("\"face_enroll\"   :%u\n", is_enrolling);
+    Serial.printf("\"face_recognize\":%u\n", face_recognition_enabled);
+    Serial.printf("\"pir_sensor\"    :%u\n", pir_enabled);
+    Serial.printf("\"udp_sender\"    :%u\n", udp_sender_enabled);
+    Serial.printf("\"ftp_sender\"    :%u\n", ftp_sender_enabled);
+    Serial.printf("\"line_sender\"   :%u\n", line_sender_enabled);
+    Serial.printf("\"send_interval\" :%d\n", send_interval);
+    Serial.println();
+    */
+}
+
+static esp_err_t save_handler(httpd_req_t *req){
+    sensor_t * s = esp_camera_sensor_get();
+    File file = SPIFFS.open(CONFIGFILE,"w");
+    if(file){
+        file.write((byte *)s,sizeof(sensor_t));
+        file.close();
+        Serial.printf("Saved file %s(%d bytes)\n",CONFIGFILE,sizeof(sensor_t));
+        printCamStatus(s);
+    }
+    return ESP_OK;
+}
+
+static esp_err_t delete_handler(httpd_req_t *req){
+    if(SPIFFS.exists(CONFIGFILE)){
+        SPIFFS.remove(CONFIGFILE);
+        if(SPIFFS.exists(CONFIGFILE)){
+            Serial.printf("ERROR: Cannot delete file %s\n",CONFIGFILE);
+            return ESP_FAIL;
+        }
+    }
+    Serial.printf("deleted file %s\n",CONFIGFILE);
+    return ESP_OK;
 }
 
 void startCameraServer(){
@@ -725,6 +851,20 @@ void startCameraServer(){
         .user_ctx  = NULL
     };
 
+    httpd_uri_t cmd_save = {
+        .uri       = "/save",
+        .method    = HTTP_GET,
+        .handler   = save_handler,
+        .user_ctx  = NULL
+    };
+    
+    httpd_uri_t cmd_delete = {
+        .uri       = "/delete",
+        .method    = HTTP_GET,
+        .handler   = delete_handler,
+        .user_ctx  = NULL
+    };
+    
     /* cam.jpg ハンドラ追加 */
     httpd_uri_t capture_jpg = {
         .uri       = "/cam.jpg",
@@ -740,13 +880,12 @@ void startCameraServer(){
         .user_ctx  = NULL
     };
 
-   httpd_uri_t stream_uri = {
+    httpd_uri_t stream_uri = {
         .uri       = "/stream",
         .method    = HTTP_GET,
         .handler   = stream_handler,
         .user_ctx  = NULL
     };
-
 
     ra_filter_init(&ra_filter, 20);
     
@@ -770,6 +909,8 @@ void startCameraServer(){
     if (httpd_start(&camera_httpd, &config) == ESP_OK) {
         httpd_register_uri_handler(camera_httpd, &index_uri);
         httpd_register_uri_handler(camera_httpd, &cmd_uri);
+        httpd_register_uri_handler(camera_httpd, &cmd_save);
+        httpd_register_uri_handler(camera_httpd, &cmd_delete);
         httpd_register_uri_handler(camera_httpd, &status_uri);
         httpd_register_uri_handler(camera_httpd, &capture_uri);
         httpd_register_uri_handler(camera_httpd, &capture_jpg);

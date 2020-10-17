@@ -576,9 +576,11 @@
                             <div class="range-max">1h</div>
                         </div>
                         <section id="buttons">
-                            <button id="get-still">&nbsp;写真撮影&nbsp;</button>
-                            <button id="toggle-stream">ビデオ撮影</button>
-                            <button id="face_enroll" class="disabled" disabled="disabled">顔認証登録</button>
+                            <button id="get-still">&nbsp;写真&nbsp;<br>撮影</button>
+                            <button id="toggle-stream">ビデオ<br>撮影</button>
+                            <button id="face_enroll" class="disabled" disabled="disabled">顔認証<br>登録</button>
+                            <button id="delete">設定<br>消去</button>
+                            <button id="save">設定<br>保存</button>
                         </section>
                     </nav>
                 </div>
@@ -681,10 +683,10 @@ document.addEventListener('DOMContentLoaded', function (event) {
 
   // read initial values
   fetch(`${baseHost}/status`)
-    .then(function (response) {
+    .then(response => { 
       return response.json()
     })
-    .then(function (state) {
+    .then(state => {
       document
         .querySelectorAll('.default-action')
         .forEach(el => {
@@ -695,19 +697,21 @@ document.addEventListener('DOMContentLoaded', function (event) {
   const view = document.getElementById('stream')
   const viewContainer = document.getElementById('stream-container')
   const stillButton = document.getElementById('get-still')
+  const saveButton = document.getElementById('save')
+  const deleteButton = document.getElementById('delete')
   const streamButton = document.getElementById('toggle-stream')
   const enrollButton = document.getElementById('face_enroll')
   const closeButton = document.getElementById('close-stream')
 
   const stopStream = () => {
     window.stop();
-    streamButton.innerHTML = 'ビデオ撮影'
+    streamButton.innerHTML = 'ビデオ<br>撮影'
   }
 
   const startStream = () => {
     view.src = `${streamUrl}/stream`
     show(viewContainer)
-    streamButton.innerHTML = 'ビデオ停止'
+    streamButton.innerHTML = 'ビデオ<br>停止'
   }
 
   // Attach actions to buttons
@@ -723,7 +727,7 @@ document.addEventListener('DOMContentLoaded', function (event) {
   }
 
   streamButton.onclick = () => {
-    const streamEnabled = streamButton.innerHTML === 'ビデオ停止'
+    const streamEnabled = streamButton.innerHTML === 'ビデオ<br>停止'
     if (streamEnabled) {
       stopStream()
     } else {
@@ -733,6 +737,18 @@ document.addEventListener('DOMContentLoaded', function (event) {
 
   enrollButton.onclick = () => {
     updateConfig(enrollButton)
+  }
+
+  saveButton.onclick = () => {
+    fetch(`${baseHost}/save`).then(response => {
+        console.log(`request to ${baseHost}/save finished, status: ${response.status}`)
+      })
+  }
+
+  deleteButton.onclick = () => {
+    fetch(`${baseHost}/delete`).then(response => {
+        console.log(`request to ${baseHost}/delete finished, status: ${response.status}`)
+      })
   }
 
   // Attach default on change action

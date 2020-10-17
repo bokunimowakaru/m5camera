@@ -261,6 +261,7 @@ Raspberry Pi 用 FTP サーバは、FileZilla Server にて動作確認を行い
 
 ## 改変部の著作権は 国野 亘 が所有します。  
 ソースコードやコンテンツのフォルダなどにライセンス表示が無い著作物については、Arduino core for the ESP32 と同じライセンス形態とします。  
+	Copyright 2019-2020 Wataru KUNINO  
 	GNU Lesser General Public License v2.1
 
 ### 主な変更点
