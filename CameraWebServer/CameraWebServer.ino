@@ -82,7 +82,7 @@
 // SLEEP_P 1796*1000000ul                   // スリープ時間 約30分(1796秒)
 // SLEEP_P 3596*1000000ul                   // スリープ時間 約60分(3596秒)
 #define SLEEP_P    0ul                      // 無効
-#define SLEEP_WAIT 0.0                      // スリープ遅延 0.0秒
+#define SLEEP_WAIT 1.2                      // スリープ遅延 0.0秒
 
 /******************************************************************************
  コンパイル方法
@@ -145,6 +145,8 @@ int         send_c = 0;                     // ソフト・タイマー用カウ
 int         wifi_mode;                      // Wi-Fiモード 0:親機AP 1:子機STA
 byte        MAC[6];                         // 本機MACアドレス
 unsigned long TIME = 0;                     // タイマー用変数
+char cc_date[] = __DATE__ ;
+char cc_time[] = __TIME__ ;
 
 void sendUdp(String dev, String S){
     WiFiUDP udp;                            // UDP通信用のインスタンスを定義

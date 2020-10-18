@@ -15,6 +15,7 @@
 void startCameraServer();
 uint16_t get_face_detected_num();
 esp_err_t capture_face();
+void setCamStatus(sensor_t *);
 void printCamStatus(sensor_t *);
 
 /*

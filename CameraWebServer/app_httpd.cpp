@@ -92,6 +92,8 @@ extern int8_t line_sender_enabled;
 extern int16_t send_interval;
 static uint16_t face_detected_num = 0;
 static face_id_list id_list = {0};
+extern char cc_time[];
+extern char cc_date[];
 
 uint16_t get_face_detected_num(){
     uint16_t i = face_detected_num;
@@ -734,62 +736,69 @@ static esp_err_t index_handler(httpd_req_t *req){
     return httpd_resp_send(req, (const char *)index_ov2640_html_gz, index_ov2640_html_gz_len);
 }
 
-void printCamStatus(sensor_t *s){
-	int res = 0;
-    Serial.printf("\"framesize\"     :%u\n", s->status.framesize);
-//  res |= s->set_framesize(s, (framesize_t)s->status.framesize);
-    Serial.printf("\"quality\"       :%u\n", s->status.quality);
-//  res |= s->set_quality(s, s->status.quality);
-    Serial.printf("\"brightness\"    :%d\n", s->status.brightness);
-//  res |= s->set_brightness(s, s->status.brightness);
-    Serial.printf("\"contrast\"      :%d\n", s->status.contrast);
-//  res |= s->set_contrast(s, s->status.contrast);
-    Serial.printf("\"saturation\"    :%d\n", s->status.saturation);
-//  res |= s->set_saturation(s, s->status.saturation);
-    Serial.printf("\"sharpness\"     :%d\n", s->status.sharpness);
-//  res |= s->set_sharpness(s, s->status.sharpness);
-    Serial.printf("\"special_effect\":%u\n", s->status.special_effect);
-//  res |= s->set_special_effect(s, s->status.special_effect);
-    Serial.printf("\"wb_mode\"       :%u\n", s->status.wb_mode);
-//  res |= s->set_wb_mode(s, s->status.wb_mode);
-    Serial.printf("\"awb\"           :%u\n", s->status.awb);
-//  res |= s->set_whitebal(s, s->status.awb);
-    Serial.printf("\"awb_gain\"      :%u\n", s->status.awb_gain);
-//  res |= s->set_awb_gain(s, s->status.awb_gain);
-    Serial.printf("\"aec\"           :%u\n", s->status.aec);
-//  res |= s->set_exposure_ctrl(s, s->status.aec);
-    Serial.printf("\"aec2\"          :%u\n", s->status.aec2);
-//  res |= s->set_aec2(s, s->status.aec2);
-    Serial.printf("\"ae_level\"      :%d\n", s->status.ae_level);
-//  res |= s->set_ae_level(s, s->status.ae_level);
-    Serial.printf("\"aec_value\"     :%u\n", s->status.aec_value);
-//  res |= s->set_aec_value(s, s->status.aec_value);
-    Serial.printf("\"agc\"           :%u\n", s->status.agc);
-//  res |= s->set_gain_ctrl(s, s->status.agc);
-    Serial.printf("\"agc_gain\"      :%u\n", s->status.agc_gain);
-//  res |= s->set_agc_gain(s, s->status.agc_gain);
-    Serial.printf("\"gainceiling\"   :%u\n", s->status.gainceiling);
-//  res |= s->set_gainceiling(s, (gainceiling_t)s->status.gainceiling);
-    Serial.printf("\"bpc\"           :%u\n", s->status.bpc);
-//  res |= s->set_bpc(s, s->status.bpc);
-    Serial.printf("\"wpc\"           :%u\n", s->status.wpc);
-//  res |= s->set_wpc(s, s->status.wpc);
-    Serial.printf("\"raw_gma\"       :%u\n", s->status.raw_gma);
-//  res |= s->set_raw_gma(s, s->status.raw_gma);
-    Serial.printf("\"lenc\"          :%u\n", s->status.lenc);
-//  res |= s->set_lenc(s, s->status.lenc);
-    Serial.printf("\"vflip\"         :%u\n", s->status.vflip);
-//  res |= s->set_vflip(s, s->status.vflip);
-    Serial.printf("\"hmirror\"       :%u\n", s->status.hmirror);
-//  res |= s->set_hmirror(s, s->status.hmirror);
-    Serial.printf("\"dcw\"           :%u\n", s->status.dcw);
-//  res |= s->set_dcw(s, s->status.dcw);
-    Serial.printf("\"colorbar\"      :%u\n", s->status.colorbar);
-//  res |= s->set_colorbar(s, s->status.colorbar);
-    Serial.println();
+void setCamStatus(sensor_t *s){
+    sensor_t buf;
+    memcpy(&buf,s,sizeof(sensor_t));
+    int res = 0;
+    res |= s->set_framesize(s, (framesize_t)buf.status.framesize);
+    res |= s->set_quality(s, buf.status.quality);
+    res |= s->set_brightness(s, buf.status.brightness);
+    res |= s->set_contrast(s, buf.status.contrast);
+    res |= s->set_saturation(s, buf.status.saturation);
+    res |= s->set_sharpness(s, buf.status.sharpness);
+    res |= s->set_special_effect(s, buf.status.special_effect);
+    res |= s->set_wb_mode(s, buf.status.wb_mode);
+    res |= s->set_whitebal(s, buf.status.awb);
+    res |= s->set_awb_gain(s, buf.status.awb_gain);
+    res |= s->set_exposure_ctrl(s, buf.status.aec);
+    res |= s->set_aec2(s, buf.status.aec2);
+    res |= s->set_ae_level(s, buf.status.ae_level);
+    res |= s->set_aec_value(s, buf.status.aec_value);
+    res |= s->set_gain_ctrl(s, buf.status.agc);
+    res |= s->set_agc_gain(s, buf.status.agc_gain);
+    res |= s->set_gainceiling(s, (gainceiling_t)buf.status.gainceiling);
+    res |= s->set_bpc(s, buf.status.bpc);
+    res |= s->set_wpc(s, buf.status.wpc);
+    res |= s->set_raw_gma(s, buf.status.raw_gma);
+    res |= s->set_lenc(s, buf.status.lenc);
+    res |= s->set_vflip(s, buf.status.vflip);
+    res |= s->set_hmirror(s, buf.status.hmirror);
+    res |= s->set_dcw(s, buf.status.dcw);
+    res |= s->set_colorbar(s, buf.status.colorbar);
     if(res){
-		Serial.printf("ERROR: setting(%d), in printCamStatus\n",res);
-	}
+        Serial.printf("ERROR: setting(%d), in printCamStatus\n",res);
+    }
+}
+
+void printCamStatus(sensor_t *s){
+    int res = 0;
+    Serial.printf("\"framesize\"     :%u\n", s->status.framesize);
+    Serial.printf("\"quality\"       :%u\n", s->status.quality);
+    Serial.printf("\"brightness\"    :%d\n", s->status.brightness);
+    Serial.printf("\"contrast\"      :%d\n", s->status.contrast);
+    Serial.printf("\"saturation\"    :%d\n", s->status.saturation);
+    Serial.printf("\"sharpness\"     :%d\n", s->status.sharpness);
+    Serial.printf("\"special_effect\":%u\n", s->status.special_effect);
+    Serial.printf("\"wb_mode\"       :%u\n", s->status.wb_mode);
+    Serial.printf("\"awb\"           :%u\n", s->status.awb);
+    Serial.printf("\"awb_gain\"      :%u\n", s->status.awb_gain);
+    Serial.printf("\"aec\"           :%u\n", s->status.aec);
+    Serial.printf("\"aec2\"          :%u\n", s->status.aec2);
+    Serial.printf("\"ae_level\"      :%d\n", s->status.ae_level);
+    Serial.printf("\"aec_value\"     :%u\n", s->status.aec_value);
+    Serial.printf("\"agc\"           :%u\n", s->status.agc);
+    Serial.printf("\"agc_gain\"      :%u\n", s->status.agc_gain);
+    Serial.printf("\"gainceiling\"   :%u\n", s->status.gainceiling);
+    Serial.printf("\"bpc\"           :%u\n", s->status.bpc);
+    Serial.printf("\"wpc\"           :%u\n", s->status.wpc);
+    Serial.printf("\"raw_gma\"       :%u\n", s->status.raw_gma);
+    Serial.printf("\"lenc\"          :%u\n", s->status.lenc);
+    Serial.printf("\"vflip\"         :%u\n", s->status.vflip);
+    Serial.printf("\"hmirror\"       :%u\n", s->status.hmirror);
+    Serial.printf("\"dcw\"           :%u\n", s->status.dcw);
+    Serial.printf("\"colorbar\"      :%u\n", s->status.colorbar);
+    Serial.println();
+
     /* 今回のバージョンでは保存しない
     Serial.printf("\"face_detect\"   :%u\n", face_detection_enabled);
     Serial.printf("\"face_enroll\"   :%u\n", is_enrolling);
@@ -805,8 +814,13 @@ void printCamStatus(sensor_t *s){
 
 static esp_err_t save_handler(httpd_req_t *req){
     sensor_t * s = esp_camera_sensor_get();
+    if(SPIFFS.exists(CONFIGFILE)){
+        SPIFFS.remove(CONFIGFILE);
+    }   // ファイルの上書きに失敗することがあるのでファイル消去を追加
     File file = SPIFFS.open(CONFIGFILE,"w");
     if(file){
+        file.write((byte *)cc_date, sizeof(__DATE__));
+        file.write((byte *)cc_time, sizeof(__TIME__));
         file.write((byte *)s,sizeof(sensor_t));
         file.close();
         Serial.printf("Saved file %s(%d bytes)\n",CONFIGFILE,sizeof(sensor_t));

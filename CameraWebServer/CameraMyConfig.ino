@@ -8,6 +8,8 @@ extern int8_t udp_sender_enabled;
 extern int8_t ftp_sender_enabled;
 extern int8_t line_sender_enabled;
 extern int16_t send_interval;
+extern char cc_date[];
+extern char cc_time[];
 
 esp_err_t cameraMyConfig(){
     camera_config_t config;
@@ -62,31 +64,41 @@ esp_err_t cameraMyConfig(){
     Serial.println("OV2640 started");
 
     sensor_t * s = esp_camera_sensor_get();
-    // initial sensors are flipped vertically and colors are a bit saturated
-    if (s->id.PID == OV3660_PID) {
-        s->set_vflip(s, 1); // flip it back
-        s->set_brightness(s, 1); // up the brightness just a bit
-        s->set_saturation(s, -2); // lower the saturation
-    }
-    // drop down frame size for higher initial frame rate
-    s->set_framesize(s, FRAMESIZE_QVGA);
-
-#if defined(CAMERA_MODEL_M5STACK_WIDE) || \
-    defined(CAMERA_MODEL_TTGO_T_CAMERA) || \
-    defined(CAMERA_MODEL_M5STACK_V2_PSRAM) || \
-    defined(CAMERA_MODEL_TTGO_T_CAMERA_V16)
-    s->set_vflip(s, 1);
-    s->set_hmirror(s, 1);
-#endif
-
+    boolean fileloaded = false;
     if(SPIFFS.exists(CONFIGFILE)){
         File file = SPIFFS.open(CONFIGFILE,"r");
-        if(file){
-            Serial.printf("Loading %s(%d bytes)\n",CONFIGFILE,sizeof(sensor_t));
-            file.read((byte *)s, sizeof(sensor_t));
-            file.close();
-            printCamStatus(s);	// app_httpd.h
+        if(file.available()){
+            char date[sizeof(__DATE__)];
+            char time[sizeof(__TIME__)];
+            file.read((byte *)date, sizeof(date));
+            file.read((byte *)time, sizeof(time));
+            if(strcmp(date,cc_date)==0 && strcmp(time,cc_time)==0){
+                Serial.printf("Loading %s(%d bytes)\n",CONFIGFILE,sizeof(sensor_t));
+                file.read((byte *)s, sizeof(sensor_t));
+                file.close();
+                printCamStatus(s);  // on app_httpd.h
+                fileloaded = true;
+                setCamStatus(s);    // on app_httpd.h
+            }else file.close();
         }
+    }
+    if(!fileloaded){
+        // initial sensors are flipped vertically and colors are a bit saturated
+        if (s->id.PID == OV3660_PID) {
+            s->set_vflip(s, 1); // flip it back
+            s->set_brightness(s, 1); // up the brightness just a bit
+            s->set_saturation(s, -2); // lower the saturation
+        }
+        // drop down frame size for higher initial frame rate
+        s->set_framesize(s, FRAMESIZE_QVGA);
+
+        #if defined(CAMERA_MODEL_M5STACK_WIDE) || \
+            defined(CAMERA_MODEL_TTGO_T_CAMERA) || \
+            defined(CAMERA_MODEL_M5STACK_V2_PSRAM) || \
+            defined(CAMERA_MODEL_TTGO_T_CAMERA_V16)
+            s->set_vflip(s, 1);
+            s->set_hmirror(s, 1);
+        #endif
     }
     return ESP_OK;
 }
