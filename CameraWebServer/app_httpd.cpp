@@ -92,6 +92,7 @@ extern int8_t line_sender_enabled;
 extern int16_t send_interval;
 static uint16_t face_detected_num = 0;
 static face_id_list id_list = {0};
+void deepsleep_keepalive(int);
 extern char cc_time[];
 extern char cc_date[];
 
@@ -326,6 +327,7 @@ static esp_err_t capture_handler(httpd_req_t *req){
     camera_fb_t * fb = NULL;
     esp_err_t res = ESP_OK;
     int64_t fr_start = esp_timer_get_time();
+    deepsleep_keepalive(0);
 
     fb = esp_camera_fb_get();
     if (!fb) {
@@ -424,6 +426,7 @@ static esp_err_t stream_handler(httpd_req_t *req){
     int64_t fr_face = 0;
     int64_t fr_recognize = 0;
     int64_t fr_encode = 0;
+    deepsleep_keepalive(0);
 
     static int64_t last_frame = 0;
     if(!last_frame) {
@@ -563,6 +566,7 @@ static esp_err_t cmd_handler(httpd_req_t *req){
     size_t buf_len;
     char variable[32] = {0,};
     char value[32] = {0,};
+    deepsleep_keepalive(30);
 
     buf_len = httpd_req_get_url_query_len(req) + 1;
     if(buf_len > 128){
@@ -723,6 +727,7 @@ static esp_err_t status_handler(httpd_req_t *req){
 }
 
 static esp_err_t index_handler(httpd_req_t *req){
+    deepsleep_keepalive(30);
     httpd_resp_set_type(req, "text/html");
     httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
     sensor_t * s = esp_camera_sensor_get();
@@ -813,6 +818,7 @@ void printCamStatus(sensor_t *s){
 }
 
 static esp_err_t save_handler(httpd_req_t *req){
+    deepsleep_keepalive(30);
     sensor_t * s = esp_camera_sensor_get();
     if(SPIFFS.exists(CONFIGFILE)){
         SPIFFS.remove(CONFIGFILE);
@@ -830,6 +836,7 @@ static esp_err_t save_handler(httpd_req_t *req){
 }
 
 static esp_err_t delete_handler(httpd_req_t *req){
+    deepsleep_keepalive(30);
     if(SPIFFS.exists(CONFIGFILE)){
         SPIFFS.remove(CONFIGFILE);
         if(SPIFFS.exists(CONFIGFILE)){

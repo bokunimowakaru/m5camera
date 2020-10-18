@@ -100,5 +100,26 @@ esp_err_t cameraMyConfig(){
             s->set_hmirror(s, 1);
         #endif
     }
+    
+    // 観測カメラ用
+    // deepsleepが設定されていると、撮影するたびにマイコンがスリープします。
+    // スリープ中は、Wi-Fi経由での設定が行えません。
+    // 事前に下記を設定しておくことで、カメラの設定を固定化することが出来ます。
+    // 他の方法として、マイコンがスリープするまでにWi-Fi経由で設定する方法も
+    // あります（操作のたびに、スリープまでの待機時間が30秒、延長されます）。
+    /*
+    if(SLEEP_P > 0){
+
+        s->set_framesize(s, (framesize_t)6);	// VGA
+        s->set_whitebal(s, 1);          // AWB = ON
+        s->set_awb_gain(s, 1);          // AWB自動調整 = ON (ON時は要モード設定)
+        s->set_wb_mode(s, 1);           // AWBモード 1(晴天)
+        s->set_exposure_ctrl(s, 0);     // AEC = off -> set_aec_valueで設定
+        s->set_aec2(s, 0);              // AEC DSP = off
+        s->set_aec_value(s, 31);        // 【要調整】手動露出調整
+        s->set_gain_ctrl(s, 0);         // AGC = off
+        s->set_agc_gain(s, 0);          // 【要調整】手動利得調整
+    }
+    */
     return ESP_OK;
 }

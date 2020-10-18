@@ -168,20 +168,21 @@ void sendUdp_Ident(){
     sendUdp_Fd(0);
 }
 
+int keepalive = 0;                          // deepsleep待機延長時間 1/10秒単位
+void deepsleep_keepalive(int sec){
+    if(keepalive > -sec * 10) keepalive = -sec * 10;
+}
+
 void deepsleep(uint32_t us){
     Serial.printf("Going to sleep for %d seconds in %.1f seconds\n",(int)(us / 1000000ul),SLEEP_WAIT);
     if(PWDN_GPIO_NUM < 0) Serial.println(",but the camera module will be eating.");
-    for(int i = (int)SLEEP_WAIT; i >= 0 ; i--){   // HTTPアクセス待ち時間
-        int stop = 10;
-        if(i == 0){
-            stop = (int)(SLEEP_WAIT * 10) % 10;
+    for(;keepalive < (int)(SLEEP_WAIT * 10); keepalive++){
+        Serial.print('.');
+        delay(100);
+        if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, keepalive % 2);
+        if(keepalive % 10 == 0){
+            Serial.printf(" in %d seconds\n",((int)(SLEEP_WAIT * 10) - keepalive) / 10);
         }
-        for(int j=0;j<stop;j++){
-            Serial.print('.');
-            delay(100);                     // 100ms * 10 = 1秒の待ち時間
-            if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, j % 2);
-        }
-        Serial.printf(" in %d seconds\n",i);
     }
     if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, HIGH);
     Serial.println("zzz...");
@@ -199,6 +200,7 @@ void setup() {
     Serial.println("\nM5Camera started");
     Serial.printf("MAC Address = %02x:%02x:%02x:%02x:%02x:%02x\n",MAC[0],MAC[1],MAC[2],MAC[3],MAC[4],MAC[5]);
     wake = TimerWakeUp_init();
+    if(wake == 0) deepsleep_keepalive(20);
 
     // LED ON
     if(LED_GPIO_NUM){
