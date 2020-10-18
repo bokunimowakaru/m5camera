@@ -122,6 +122,10 @@ Arduino IDEの[ツール]メニュー⇒[ボード]から、「ESP32 Wrover Modu
 * Partition Scheme : Huge App (3MB APP No OTA/1MB SPIFFS)
 * PSRAM : Enable (arduino-esp32 バージョン 1.0.4 では設定不要)
 
+カメラ設定値を SPIFFS に保存する機能を追加しました(2020/10/18)。  
+ブラウザ上の[設定保存]ボタンで設定をSPIFFSに保存します。[設定削除]ボタンで削除することもできます。  
+Partition Schemeでは、上例のように、SPIFFSが利用可能なものを選択してください。  
+
 ------------------------------------------------------------------------------------
 # Raspberry Pi用 サーバ
 

@@ -46,7 +46,7 @@ do                                                  # 繰り返し
         DATE=`date "+%Y%m%d-%H%M%S"`                # 日時を取得
         URL=${IP_CAM}/cam.jpg                       # URLを作成
         echo -n "Get "${URL}                        # 画像取得t実行表示
-        timeout 60 wget -qT10 ${URL} -O${SAVETO}/${DEVICE1}"_"${DATE}.jpg
+        timeout 30 wget -qT10 ${URL} -O${SAVETO}/${DEVICE1}"_"${DATE}.jpg
         echo " Done"                                # 終了表示
     fi
 done                                                # 繰り返し範囲:ここまで
