@@ -687,7 +687,7 @@ static esp_err_t status_handler(httpd_req_t *req){
     p+=sprintf(p, "\"brightness\":%d,", s->status.brightness);
     p+=sprintf(p, "\"contrast\":%d,", s->status.contrast);
     p+=sprintf(p, "\"saturation\":%d,", s->status.saturation);
-    p+=sprintf(p, "\"sharpness\":%d,", s->status.sharpness);
+//  p+=sprintf(p, "\"sharpness\":%d,", s->status.sharpness);
     p+=sprintf(p, "\"special_effect\":%u,", s->status.special_effect);
     p+=sprintf(p, "\"wb_mode\":%u,", s->status.wb_mode);
     p+=sprintf(p, "\"awb\":%u,", s->status.awb);
@@ -750,7 +750,7 @@ void setCamStatus(sensor_t *s){
     res |= s->set_brightness(s, buf.status.brightness);
     res |= s->set_contrast(s, buf.status.contrast);
     res |= s->set_saturation(s, buf.status.saturation);
-    res |= s->set_sharpness(s, buf.status.sharpness);
+//  res |= s->set_sharpness(s, buf.status.sharpness); // ここでエラーが出る
     res |= s->set_special_effect(s, buf.status.special_effect);
     res |= s->set_wb_mode(s, buf.status.wb_mode);
     res |= s->set_whitebal(s, buf.status.awb);
@@ -770,9 +770,7 @@ void setCamStatus(sensor_t *s){
     res |= s->set_hmirror(s, buf.status.hmirror);
     res |= s->set_dcw(s, buf.status.dcw);
     res |= s->set_colorbar(s, buf.status.colorbar);
-    if(res){
-        Serial.printf("ERROR: setting(%d), in printCamStatus\n",res);
-    }
+    if(res) Serial.printf("ERROR: setting(%d), in printCamStatus\n",res);
 }
 
 void printCamStatus(sensor_t *s){
@@ -782,7 +780,7 @@ void printCamStatus(sensor_t *s){
     Serial.printf("\"brightness\"    :%d\n", s->status.brightness);
     Serial.printf("\"contrast\"      :%d\n", s->status.contrast);
     Serial.printf("\"saturation\"    :%d\n", s->status.saturation);
-    Serial.printf("\"sharpness\"     :%d\n", s->status.sharpness);
+//  Serial.printf("\"sharpness\"     :%d\n", s->status.sharpness);
     Serial.printf("\"special_effect\":%u\n", s->status.special_effect);
     Serial.printf("\"wb_mode\"       :%u\n", s->status.wb_mode);
     Serial.printf("\"awb\"           :%u\n", s->status.awb);
