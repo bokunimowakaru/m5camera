@@ -335,6 +335,9 @@ static esp_err_t capture_handler(httpd_req_t *req){
         httpd_resp_send_500(req);
         return ESP_FAIL;
     }
+    if(fb->width >= 1024){
+        deepsleep_keepalive(1);
+    }
 
     httpd_resp_set_type(req, "image/jpeg");
     httpd_resp_set_hdr(req, "Content-Disposition", "inline; filename=capture.jpg");
@@ -358,7 +361,11 @@ static esp_err_t capture_handler(httpd_req_t *req){
         }
         esp_camera_fb_return(fb);
         int64_t fr_end = esp_timer_get_time();
-        Serial.printf("JPG: %uB %ums\n", (uint32_t)(fb_len), (uint32_t)((fr_end - fr_start)/1000));
+        int size = ((int)fb_len) / 1000;
+        Serial.printf("JPG: %d kB(%u B), %u ms\n", size, (uint32_t)fb_len, (uint32_t)((fr_end - fr_start)/1000));
+        if(size <= 100)      deepsleep_keepalive(0);
+        else if(size <= 200) deepsleep_keepalive(1);
+        else                 deepsleep_keepalive(3);
         return res;
     }
 
@@ -409,6 +416,7 @@ static esp_err_t capture_handler(httpd_req_t *req){
 
     int64_t fr_end = esp_timer_get_time();
     Serial.printf("FACE: %uB %ums %s%d\n", (uint32_t)(jchunk.len), (uint32_t)((fr_end - fr_start)/1000), detected?"DETECTED ":"", face_id);
+    deepsleep_keepalive(0);
     return res;
 }
 
@@ -566,7 +574,7 @@ static esp_err_t cmd_handler(httpd_req_t *req){
     size_t buf_len;
     char variable[32] = {0,};
     char value[32] = {0,};
-    deepsleep_keepalive(30);
+    deepsleep_keepalive(20);
 
     buf_len = httpd_req_get_url_query_len(req) + 1;
     if(buf_len > 128){
@@ -727,7 +735,7 @@ static esp_err_t status_handler(httpd_req_t *req){
 }
 
 static esp_err_t index_handler(httpd_req_t *req){
-    deepsleep_keepalive(30);
+    deepsleep_keepalive(20);
     httpd_resp_set_type(req, "text/html");
     httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
     sensor_t * s = esp_camera_sensor_get();
@@ -816,7 +824,7 @@ void printCamStatus(sensor_t *s){
 }
 
 static esp_err_t save_handler(httpd_req_t *req){
-    deepsleep_keepalive(30);
+    deepsleep_keepalive(20);
     sensor_t * s = esp_camera_sensor_get();
     if(SPIFFS.exists(CONFIGFILE)){
         SPIFFS.remove(CONFIGFILE);
@@ -834,7 +842,7 @@ static esp_err_t save_handler(httpd_req_t *req){
 }
 
 static esp_err_t delete_handler(httpd_req_t *req){
-    deepsleep_keepalive(30);
+    deepsleep_keepalive(20);
     if(SPIFFS.exists(CONFIGFILE)){
         SPIFFS.remove(CONFIGFILE);
         if(SPIFFS.exists(CONFIGFILE)){

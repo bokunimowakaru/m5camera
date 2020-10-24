@@ -76,13 +76,14 @@
  ※ PWDN_GPIO_NUM<0 のデバイスはカメラをOFFできない。
  *****************************************************************************/
 // SLEEP_P 0ul                              // 無効
+// SLEEP_P 16*1000000ul                     // スリープ時間 16秒
 // SLEEP_P 56*1000000ul                     // スリープ時間 56秒
 // SLEEP_P 296*1000000ul                    // スリープ時間 約5分(296秒)
 // SLEEP_P 596*1000000ul                    // スリープ時間 約10分(596秒)
 // SLEEP_P 1796*1000000ul                   // スリープ時間 約30分(1796秒)
 // SLEEP_P 3596*1000000ul                   // スリープ時間 約60分(3596秒)
 #define SLEEP_P    0ul                      // 無効
-#define SLEEP_WAIT 1.2                      // スリープ遅延 0.0秒
+#define SLEEP_WAIT 1.5                      // スリープ遅延 0.0秒
 
 /******************************************************************************
  コンパイル方法
@@ -170,25 +171,18 @@ void sendUdp_Ident(){
 
 int keepalive = 0;                          // deepsleep待機延長時間 1/10秒単位
 void deepsleep_keepalive(int sec){
+    // Serial.printf("\n keepa=%.1f, sec=%d ---\n",-(float)keepalive/10,sec);
     if(keepalive > -sec * 10) keepalive = -sec * 10;
 }
 
 void deepsleep(uint32_t us){
     Serial.printf("Going to sleep for %d seconds in %.1f seconds\n",(int)(us / 1000000ul),SLEEP_WAIT);
     if(PWDN_GPIO_NUM < 0) Serial.println(",but the camera module will be eating.");
-    for(;keepalive < (int)(SLEEP_WAIT * 10); keepalive++){
-        Serial.print('.');
-        delay(100);
-        if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, keepalive % 2);
-        if(keepalive % 10 == 0){
-            Serial.printf(" in %d seconds\n",((int)(SLEEP_WAIT * 10) - keepalive) / 10);
-        }
-    }
-    if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, HIGH);
+    delay((int)(SLEEP_WAIT * 1000));
     Serial.println("zzz...");
-    delay(102);                             // 送信待ち時間
+    delay(102);
     esp_camera_deinit();
-    esp_deep_sleep(us);                     // Deep Sleepモードへ移行
+    esp_deep_sleep(us);
     while(1) delay(100);
 }
 
@@ -360,6 +354,26 @@ void loop() {
         delay(100);
     }
     if(send_interval) send_c++; else send_c = 1;
-    if(SLEEP_P != 0) deepsleep(SLEEP_P);
-    if(!wifi_mode && millis() - TIME > 600000ul) deepsleep(600*1000000ul); // AP10分経過
+    if(!wifi_mode && millis() - TIME < 600000ul) deepsleep(600*1000000ul);	// 親機かつ、起動後600秒(10分)以内のとき
+    if(!SLEEP_P && wifi_mode) return; // deepsleep未設定 かつ 子機STAのとき
+    
+    // 間欠送信処理中の DEEP SLEEP 処理 ////////////////////////////////////////////////////
+    uint32_t us = SLEEP_P;
+    if(!us) us = 600*1000000ul;		// 10分間
+    Serial.printf("Going to sleep for %d seconds in %.1f seconds\n",(int)(us / 1000000ul),SLEEP_WAIT);
+    if(PWDN_GPIO_NUM < 0) Serial.println(",but the camera module will be eating.");
+    for(;keepalive < (int)(SLEEP_WAIT * 10); keepalive++){
+        Serial.print('.');
+        for(int i=0;i<100;i++) delay(1);
+        if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, keepalive % 2);
+        if(keepalive % 10 == 0){
+            Serial.printf(" in %d seconds\n",((int)(SLEEP_WAIT * 10) - keepalive) / 10 + 1);
+        }
+    }
+    if(LED_GPIO_NUM) digitalWrite(LED_GPIO_NUM, HIGH);
+    Serial.println("zzz...");
+    delay(102);                             // 送信待ち時間
+    esp_camera_deinit();
+    esp_deep_sleep(us);                     // Deep Sleepモードへ移行
+    while(1) delay(100);
 }

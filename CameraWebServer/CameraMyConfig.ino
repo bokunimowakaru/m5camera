@@ -76,7 +76,7 @@ esp_err_t cameraMyConfig(){
                 Serial.printf("Loading %s(%d bytes)\n",CONFIGFILE,sizeof(sensor_t));
                 file.read((byte *)s, sizeof(sensor_t));
                 file.close();
-                printCamStatus(s);  // on app_httpd.h
+                // printCamStatus(s);  // on app_httpd.h
                 fileloaded = true;
                 setCamStatus(s);    // on app_httpd.h
             }else file.close();
@@ -90,7 +90,7 @@ esp_err_t cameraMyConfig(){
             s->set_saturation(s, -2); // lower the saturation
         }
         // drop down frame size for higher initial frame rate
-        s->set_framesize(s, FRAMESIZE_QVGA);
+        s->set_framesize(s, FRAMESIZE_VGA);
 
         #if defined(CAMERA_MODEL_M5STACK_WIDE) || \
             defined(CAMERA_MODEL_TTGO_T_CAMERA) || \
