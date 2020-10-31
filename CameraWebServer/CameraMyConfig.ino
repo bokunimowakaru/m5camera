@@ -111,6 +111,7 @@ esp_err_t cameraMyConfig(){
     // 観測カメラ用
     // deepsleepが設定されていると、撮影するたびにマイコンがスリープします。
     // スリープ中は、Wi-Fi経由での設定が行えません。
+    
     // 事前に下記を設定しておくことで、カメラの設定を固定化することが出来ます。
     // 他の方法として、マイコンがスリープするまでにWi-Fi経由で設定する方法も
     // あります（操作のたびに、スリープまでの待機時間が30秒、延長されます）。
@@ -118,15 +119,27 @@ esp_err_t cameraMyConfig(){
     if(SLEEP_P > 0){
 
         s->set_framesize(s, (framesize_t)6);	// VGA
-        s->set_whitebal(s, 1);          // AWB = ON
+        s->set_whitebal(s, 1);          // AWB = ON (s->status.awb)
         s->set_awb_gain(s, 1);          // AWB自動調整 = ON (ON時は要モード設定)
         s->set_wb_mode(s, 1);           // AWBモード 1(晴天)
-        s->set_exposure_ctrl(s, 0);     // AEC = off -> set_aec_valueで設定
+        s->set_exposure_ctrl(s, 0);     // AEC = off status.aec -> set_aec_valueで設定
         s->set_aec2(s, 0);              // AEC DSP = off
         s->set_aec_value(s, 31);        // 【要調整】手動露出調整
         s->set_gain_ctrl(s, 0);         // AGC = off
         s->set_agc_gain(s, 0);          // 【要調整】手動利得調整
     }
     */
+    
+    /* カメラの自動調整待ち時間を追加 */
+    int wait = 5 * (s->status.awb + s->status.awb_gain + s->status.aec + s->status.agc);
+    if(wait > 0){    // AWB=ON,          AWB=自動調整                 AEC=ON
+        Serial.println("AWB Calibrating");
+        for(; wait > 0; wait--){
+            digitalWrite(LED_GPIO_NUM, !digitalRead(LED_GPIO_NUM));
+            Serial.print('.');
+            delay(100);
+        }
+        Serial.println();
+    }
     return ESP_OK;
 }
