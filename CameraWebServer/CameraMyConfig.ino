@@ -75,6 +75,13 @@ esp_err_t cameraMyConfig(){
             if(strcmp(date,cc_date)==0 && strcmp(time,cc_time)==0){
                 Serial.printf("Loading %s(%d bytes)\n",CONFIGFILE,sizeof(sensor_t));
                 file.read((byte *)s, sizeof(sensor_t));
+                file.read((byte *)&face_detection_enabled,1);
+                file.read((byte *)&face_recognition_enabled,1);
+                file.read((byte *)&pir_enabled,1);
+                file.read((byte *)&udp_sender_enabled,1);
+                file.read((byte *)&ftp_sender_enabled,1);
+                file.read((byte *)&line_sender_enabled,1);
+                file.read((byte *)&send_interval,2);
                 file.close();
                 // printCamStatus(s);  // on app_httpd.h
                 fileloaded = true;

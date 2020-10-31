@@ -363,8 +363,8 @@ static esp_err_t capture_handler(httpd_req_t *req){
         int64_t fr_end = esp_timer_get_time();
         int size = ((int)fb_len) / 1000;
         Serial.printf("JPG: %d kB(%u B), %u ms\n", size, (uint32_t)fb_len, (uint32_t)((fr_end - fr_start)/1000));
-        if(size <= 100)      deepsleep_keepalive(0);
-        else if(size <= 200) deepsleep_keepalive(1);
+        if(size <= 200)      deepsleep_keepalive(0);
+        else if(size <= 400) deepsleep_keepalive(1);
         else                 deepsleep_keepalive(3);
         return res;
     }
@@ -628,7 +628,14 @@ static esp_err_t cmd_handler(httpd_req_t *req){
     else if(!strcmp(variable, "vflip")) res = s->set_vflip(s, val);
     else if(!strcmp(variable, "awb_gain")) res = s->set_awb_gain(s, val);
     else if(!strcmp(variable, "agc_gain")) res = s->set_agc_gain(s, val);
-    else if(!strcmp(variable, "aec_value")) res = s->set_aec_value(s, val);
+    else if(!strcmp(variable, "aec_value"))
+    {   //              10^(31 / 1200 * logVal / 10)-1
+        float trueVal = pow(10, 31. / 12000. * (float)val) - 1.;
+        if(trueVal < 0.) trueVal = 0.;
+        if(trueVal > 1200.) trueVal = 1200;
+        res = s->set_aec_value(s, (int)trueVal);
+        // Serial.printf("aec_value to real: %d -> %d\n",val,(int)trueVal);
+    }
     else if(!strcmp(variable, "aec2")) res = s->set_aec2(s, val);
     else if(!strcmp(variable, "dcw")) res = s->set_dcw(s, val);
     else if(!strcmp(variable, "bpc")) res = s->set_bpc(s, val);
@@ -703,7 +710,12 @@ static esp_err_t status_handler(httpd_req_t *req){
     p+=sprintf(p, "\"aec\":%u,", s->status.aec);
     p+=sprintf(p, "\"aec2\":%u,", s->status.aec2);
     p+=sprintf(p, "\"ae_level\":%d,", s->status.ae_level);
-    p+=sprintf(p, "\"aec_value\":%u,", s->status.aec_value);
+    //           = 1200 / 31 * 10 * log(realVal + 1, 10)
+    float logVal = 12000. / 31. * (float)log10((double)(s->status.aec_value) + 1.);
+    if(logVal < 0.) logVal = 0.;
+    if(logVal > 1200.) logVal = 1200.;
+    // Serial.printf("aec_value to log10: %d -> %d\n",s->status.aec_value,(int)logVal);
+    p+=sprintf(p, "\"aec_value\":%u,", (int)logVal);
     p+=sprintf(p, "\"agc\":%u,", s->status.agc);
     p+=sprintf(p, "\"agc_gain\":%u,", s->status.agc_gain);
     p+=sprintf(p, "\"gainceiling\":%u,", s->status.gainceiling);
@@ -810,9 +822,7 @@ void printCamStatus(sensor_t *s){
     Serial.printf("\"colorbar\"      :%u\n", s->status.colorbar);
     Serial.println();
 
-    /* 今回のバージョンでは保存しない
     Serial.printf("\"face_detect\"   :%u\n", face_detection_enabled);
-    Serial.printf("\"face_enroll\"   :%u\n", is_enrolling);
     Serial.printf("\"face_recognize\":%u\n", face_recognition_enabled);
     Serial.printf("\"pir_sensor\"    :%u\n", pir_enabled);
     Serial.printf("\"udp_sender\"    :%u\n", udp_sender_enabled);
@@ -820,7 +830,6 @@ void printCamStatus(sensor_t *s){
     Serial.printf("\"line_sender\"   :%u\n", line_sender_enabled);
     Serial.printf("\"send_interval\" :%d\n", send_interval);
     Serial.println();
-    */
 }
 
 static esp_err_t save_handler(httpd_req_t *req){
@@ -834,8 +843,15 @@ static esp_err_t save_handler(httpd_req_t *req){
         file.write((byte *)cc_date, sizeof(__DATE__));
         file.write((byte *)cc_time, sizeof(__TIME__));
         file.write((byte *)s,sizeof(sensor_t));
+        file.write((byte)face_detection_enabled);
+        file.write((byte)face_recognition_enabled);
+        file.write((byte)pir_enabled);
+        file.write((byte)udp_sender_enabled);
+        file.write((byte)ftp_sender_enabled);
+        file.write((byte)line_sender_enabled);
+        file.write((byte *)&send_interval,2);
         file.close();
-        Serial.printf("Saved file %s(%d bytes)\n",CONFIGFILE,sizeof(sensor_t));
+        Serial.printf("Saved file %s(%d bytes)\n",CONFIGFILE,sizeof(sensor_t) + 8);
         printCamStatus(s);
     }
     return ESP_OK;
