@@ -15,6 +15,7 @@
  *****************************************************************************/
 // CAMERA_MODEL_M5STACK_PSRAM               // M5Camera version A
 // CAMERA_MODEL_M5STACK_V2_PSRAM            // M5Camera version B
+// CAMERA_MODEL_M5STACK_TimerCAM            // M5Camera Timer CAM
 // CAMERA_MODEL_TTGO_T_CAMERA               // TTGO T-Camera OV2640_V05用
 // CAMERA_MODEL_TTGO_T_CAMERA_V16           // TTGO T-Camera OV2640_V1.6用
 
