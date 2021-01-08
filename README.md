@@ -217,6 +217,51 @@ Raspberry Pi 用 FTP サーバは、FileZilla Server にて動作確認を行い
 	- 追加したディレクトリにアクセス権の追加 (Read, Write, Delete)
 	- 上記の設定で動作したら、セキュリティ対策を行う
 
+## さくらのレンタルサーバ (2021/1/8追記)
+
+さくらのレンタルサーバを契約し、以下を取得します。  
+
+	- FTPサーバ名（例 = iot-cam.sakura.ne.jp）
+	- FTPアカウント名（例 = iot-cam）
+	- 初期フォルダ（例 = www）
+	- サーバ用パスワード（例 = password）
+
+上記（アカウント名＝iot-cam、初期フォルダ＝www、パスワード＝password）の場合、以下のように設定します。  
+
+	#define FTP_TO   "iot-cam.sakura.ne.jp"  // FTP 送信先のIPアドレス(★要設定)
+	#define FTP_USER "iot-cam"               // FTP ユーザ名(★要設定)
+	#define FTP_PASS "password"              // FTP パスワード(★要設定)
+	#define FTP_DIR  "/home/iot-cam/www"     // FTP ディレクトリ(Raspberry Pi等)
+
+ただし、上記だと初期フォルダ www にある index.html を上書きしてしまいます。既に利用中のサーバであれば、camフォルダなどを作成し、以下のように設定して下さい。  
+
+	#define FTP_DIR  "/home/iot-cam/www/cam" // FTP ディレクトリ(Raspberry Pi等)
+
+ftp.ino の #define DEBUG_FTP を有効にすると、以下のようなログが表示されればFTP送信の成功です。「STOR」コマンドの後に 550 ... No such file or directory のような表示が出た場合は、サーバ上に適切なフォルダが無いか、初期フォルダ名が誤っているので修正してください。
+
+	ftp://iot-cam:**********@iot-cam.sakura.ne.jp:21//home/iot-cam/www/cam cam_a_5_0001.jpg
+	Command connected
+	>220 ProFTPD 1.3.5a Server (SAKURA Internet FTP Server) [::ffff:xxx.xxx.xxx.xxx]
+	USER iot-cam
+	>331 Password required for iot-cam
+	PASS
+	>230 User iot-cam logged in
+	Type i
+	>200 Type set to I
+	PASV
+	>227 Entering Passive Mode (xxx,xxx,xxx,xxx,49,127).
+	Data port: 12671
+	Data connected
+	STOR /home/iot-cam/www/cam/cam_a_5_0003.jpg
+	>150 Opening BINARY mode data connection for /home/iot-cam/www/cam/cam_a_5_0001.jpg
+	PIXFORMAT = 3
+	Writing
+	JPG: 10786 Bytes 282 ms
+	Data disconnected
+	>226 Transfer complete
+	QUIT
+	Command disconnected
+
 ------------------------------------------------------------------------------------
 # ご注意・外部から不正に侵入されると、室内の様子などが流出してしまいます。
 
