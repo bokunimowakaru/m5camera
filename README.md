@@ -244,7 +244,7 @@ FTP送信機能を有効にします。
 
 	int8_t      ftp_sender_enabled = 1;         // FTP 送信無効=0,有効=1
 
-ftp.ino の #define DEBUG_FTP を有効にすると、以下のようなログが表示されればFTP送信の成功です。「STOR」コマンドの後に 550 ... No such file or directory のような表示が出た場合は、サーバ上に適切なフォルダが無いか、初期フォルダ名が誤っているので修正してください。
+ftp.ino の #define DEBUG_FTP を有効にすると、以下のようなログが表示されます。「STOR」コマンドの後に 150 Opening BINARY mode ...と表示されれば、接続成功です。550 ... No such file or directory のような表示が出た場合は、サーバ上に適切なフォルダが無いか、初期フォルダ名が誤っているので修正してください。
 
 	ftp://iot-cam:**********@iot-cam.sakura.ne.jp:21//home/iot-cam/www/cam cam_a_5_0001.jpg
 	Command connected
