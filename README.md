@@ -222,7 +222,7 @@ Raspberry Pi 用 FTP サーバは、FileZilla Server にて動作確認を行い
 撮影したカメラ画像を、インターネットにFTPでアップロードし、Webブラウザで表示することも出来ます。  
 画像がインターネット上に公開されるので、セキュリティやモラルに、ご注意ください。  
 
-さくらのレンタルサーバ（https://www.sakura.ne.jp/）を契約し、以下を取得します。  
+[さくらのレンタルサーバ](https://www.sakura.ne.jp/)を契約し、以下を取得します。  
 
 - FTPサーバ名（例 = iot-cam.sakura.ne.jp）
 - FTPアカウント名（例 = iot-cam）
