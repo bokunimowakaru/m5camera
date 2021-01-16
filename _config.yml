@@ -1,4 +1,4 @@
 theme: jekyll-theme-cayman
 show_downloads: true
-plugins:
-- jekyll-sitemap
+plugins: 
+  - jekyll-sitemap
