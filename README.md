@@ -14,7 +14,7 @@ Wi-Fi 搭載 カメラ M5Camera が顔を検知した時や人感センサ（PIR
 スマートフォンのブラウザから M5Camera へアクセスし、動作確認が出来ます。
 また、顔検知機能のON/OFFや、人感センサのON/OFF、FTP 送信のON/OFF、LINE 送信のON/OFF、送信間隔などもスマートフォンから行えます。  
 
-![説明図1](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig1.jpg)
+![説明図1](image/fig1.jpg)
 
 FTP 送信時は、写真だけでなく、HTMLファイルも転送するので、パソコンのブラウザなどで写真を一覧表示することが出来ます。初期値では、16枚までの写真をHTMLファイルで表示します（int FileNumMax = 16;で変更可能）。  
 
