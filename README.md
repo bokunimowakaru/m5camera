@@ -18,15 +18,15 @@ Wi-Fi 搭載 カメラ M5Camera が顔を検知した時や人感センサ（PIR
 
 FTP 送信時は、写真だけでなく、HTMLファイルも転送するので、パソコンのブラウザなどで写真を一覧表示することが出来ます。初期値では、16枚までの写真をHTMLファイルで表示します（int FileNumMax = 16;で変更可能）。  
 
-![説明図2](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig2.jpg)
+![説明図2](image/fig2.jpg)
 
 操作画面は、日本語表示に対応したほか、検知機能のON/OFF設定と、送信ON/OFF設定、送信間隔の設定が可能です。  
 
-![説明図3](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig3.jpg)
+![説明図3](image/fig3.jpg)
 
 顔を検知したときや、人感センサが反応したときに、LINE Notify へ写真を送信することも出来ます。  
 
-![説明図4](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig4.jpg)
+![説明図4](image/fig4.jpg)
 
 ------------------------------------------------------------------------------------
 # CameraWebServerFTP の動作確認方法
