@@ -1,4 +1,5 @@
 theme: jekyll-theme-cayman
 show_downloads: true
+url: "https://bokunimowakaru.github.io/m5camera/"
 plugins: 
   - jekyll-sitemap
