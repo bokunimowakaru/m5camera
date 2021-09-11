@@ -1,25 +1,20 @@
 /******************************************************************************
- CameraWebServerFTP forked by bokunimo.net
+ CameraWebServerFTP TimerCAM forked by bokunimo.net
  ******************************************************************************
- Wi-Fi 搭載カメラ M5Camera が顔を検知した時や人感センサ（PIR Unit）が人体などの
+ Wi-Fi カメラ M5 Timer CAM が顔を検知した時や人感センサ（PIR Unit）が人体などの
  動きを検知したとき、あるいは設定した周期ごとに、写真を撮影し、FTP サーバや、
  LINE、Windows PC、Raspberry Pi 等へ転送します。
                                                                  Wataru KUNINO
  *****************************************************************************/
 
-/******************************************************************************
- カメラ 選択 ※使用するカメラを選択してください。
- ******************************************************************************
- ※ M5Camera version B を使用する場合は変更不要です。
- ※ version A の場合は #define CAMERA_MODEL_M5STACK_PSRAMに変更してください。
- *****************************************************************************/
-// CAMERA_MODEL_M5STACK_PSRAM               // M5Camera version A
-// CAMERA_MODEL_M5STACK_V2_PSRAM            // M5Camera version B
-// CAMERA_MODEL_M5STACK_TimerCAM            // M5Camera Timer CAM
-// CAMERA_MODEL_TTGO_T_CAMERA               // TTGO T-Camera OV2640_V05用
-// CAMERA_MODEL_TTGO_T_CAMERA_V16           // TTGO T-Camera OV2640_V1.6用
+///////////////////////////////////////////////////////////////////////////////
+/*  M5Stack Timer CAM 専用 */
+///////////////////////////////////////////////////////////////////////////////
 
-#define CAMERA_MODEL_M5STACK_V2_PSRAM       // [選択例] M5Camera version B
+// Arduino IDEの ボード設定で M5Stack-Timer-CAM を選択してください。
+
+#define CAMERA_MODEL_M5STACK_TimerCAM
+
 
 /******************************************************************************
  Wi-Fi 設定 ※下記にゲートウェイのWi-Fi設定を入力してください
@@ -85,6 +80,7 @@
 // SLEEP_P 1796*1000000ul                   // スリープ時間 約30分(1796秒)
 // SLEEP_P 3596*1000000ul                   // スリープ時間 約60分(3596秒)
 #define SLEEP_P    0ul                      // 無効
+#define SLEEP_P 56*1000000ul                     // スリープ時間 56秒
 #define SLEEP_WAIT 1.5                      // スリープ待機
 
 /******************************************************************************
@@ -114,6 +110,18 @@
     - app_httpd.cpp：
         Copyright 2015-2016 Espressif Systems (Shanghai) PTE LTD
         Apache License, Version 2.0
+    - wakeup.ino 
+        MIT License (ファイル=wakeup_LICENSE)
+        https://github.com/m5stack/TimerCam-arduino
+    - battery.c battery.h
+        MIT License (ファイル=battery_LICENSE)
+        https://github.com/m5stack/TimerCam-arduino
+    - bmm8563.c bmm8563.h
+        MIT License (ファイル=bmm8563_LICENSE)
+        https://github.com/m5stack/TimerCam-arduino
+    - led.c led.h
+        MIT License (ファイル=led_LICENSE)
+        https://github.com/m5stack/TimerCam-arduino
     - 改変部の著作権は Wataru KUNINO (bokunimo.net) が所有します。
  *****************************************************************************/
 
@@ -121,13 +129,18 @@
  プログラム部
  *****************************************************************************/
 
+#include "Arduino.h"
+#include "freertos/FreeRTOS.h"
+#include "battery.h"
+#include "led.h"
+#include "bmm8563.h"
+
 #include <SPIFFS.h>
 #include <WiFi.h>
 #include <WiFiUdp.h>                        // UDP通信を行うライブラリ
-#include "esp_sleep.h"                      // ESP32用Deep Sleep ライブラリ
 #include "esp_camera.h"
-#include "camera_pins.h"                    // 選択したカメラの設定値の組込部
-#include "app_httpd.h"                      // カメラ制御用ＩＦ部の組み込み
+#include "./camera_pins.h"                  // 選択したカメラの設定値の組込部
+#include "./app_httpd.h"                    // カメラ制御用ＩＦ部の組み込み
 
 char        CONFIGFILE[] = "/camset.txt";   // 設定ファイルの保存名(SPIFFS)
 int         FileNumMax = 16;                // FTP 保存先の最大ファイル数
@@ -179,12 +192,16 @@ void deepsleep_keepalive(int sec){
 
 void deepsleep(uint32_t us){
     Serial.printf("Going to sleep for %d seconds in %.1f seconds\n",(int)(us / 1000000ul),SLEEP_WAIT);
-    if(PWDN_GPIO_NUM < 0) Serial.println(",but the camera module will be eating.");
+    // if(PWDN_GPIO_NUM < 0) Serial.println(",but the camera module will be eating.");
     delay((int)(SLEEP_WAIT * 1000));
     Serial.println("zzz...");
     delay(102);
-    esp_camera_deinit();
-    esp_deep_sleep(us);
+
+    sleepTimerCAM(us);
+
+    // esp_camera_deinit();
+    // esp_deep_sleep(us);                     // Deep Sleepモードへ移行
+
     while(1) delay(100);
 }
 
@@ -197,6 +214,10 @@ void setup() {
     Serial.printf("MAC Address = %02x:%02x:%02x:%02x:%02x:%02x\n",MAC[0],MAC[1],MAC[2],MAC[3],MAC[4],MAC[5]);
     wake = TimerWakeUp_init();
     if(wake == 0) deepsleep_keepalive(20);
+
+    #ifdef CAMERA_MODEL_M5STACK_TimerCAM
+        setupTimerCAM();
+    #endif
 
     // LED ON
     if(LED_GPIO_NUM){
@@ -381,7 +402,11 @@ void loop() {
     Serial.printf("zzz...\nDuty Cycle = %.1f(s) / %.1f(s) = 1 / %.1f\n\n",
         (float)ms1/1000., (float)ms2/1000., (float)ms2 / (float)ms1);
     delay(6);                               // シリアル待ち時間
-    esp_camera_deinit();
-    esp_deep_sleep(us);                     // Deep Sleepモードへ移行
+    
+    sleepTimerCAM(SLEEP_P);
+
+    // esp_camera_deinit();
+    // esp_deep_sleep(us);                     // Deep Sleepモードへ移行
+
     while(1) delay(100);
 }
