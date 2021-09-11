@@ -12,6 +12,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Arduino IDEの ボード設定で M5Stack-Timer-CAM を選択してください。
+// 後述の「コンパイル方法」を参照のこと。
 
 #define CAMERA_MODEL_M5STACK_TimerCAM
 
@@ -87,15 +88,14 @@
  コンパイル方法
  ******************************************************************************
  Arduino IDEと arduino-esp32 をインストールし、組み込んでコンパイルを行います。
- arduino-esp32のバージョンは 1.0.4 を使用しました（1.0.2未満では動作しない）。
+ arduino-esp32のバージョンは 2.0.0-alpha1 を使用して動作確認しました。
 
  必要なライブラリ：
  arduino-esp32：https://github.com/espressif/arduino-esp32/releases
  
  コンパイル時の設定：
- [ESP32 Wrover Module]と[Huge App]を選択してください
-  ・Arduino IDE：[ツール]⇒[ボード]⇒[ESP32 Wrover Module]
-  ・Partition Scheme : [Huge App (3MB APP No OTA/1MB SPIFFS)]
+ [M5Stack-Timer-CAM]を選択してください
+  ・Arduino IDE：[ツール]⇒[ボード]⇒[M5Stack-Timer-CAM]
   ・PSRAM : Enable
  *****************************************************************************/
 
