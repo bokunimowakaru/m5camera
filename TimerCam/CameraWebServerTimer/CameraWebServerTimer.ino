@@ -80,8 +80,8 @@
 // SLEEP_P 596*1000000ul                    // スリープ時間 約10分(596秒)
 // SLEEP_P 1796*1000000ul                   // スリープ時間 約30分(1796秒)
 // SLEEP_P 3596*1000000ul                   // スリープ時間 約60分(3596秒)
-#define SLEEP_P    0ul                      // 無効
-#define SLEEP_P 56*1000000ul                     // スリープ時間 56秒
+
+#define SLEEP_P 0ul                         // 無効
 #define SLEEP_WAIT 1.5                      // スリープ待機
 
 /******************************************************************************
@@ -216,7 +216,7 @@ void setup() {
     if(wake == 0) deepsleep_keepalive(20);
 
     #ifdef CAMERA_MODEL_M5STACK_TimerCAM
-        setupTimerCAM();
+        setupTimerCAM(!wake);	// wakeが0のときに時刻をセット
     #endif
 
     // LED ON
