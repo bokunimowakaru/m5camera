@@ -213,8 +213,7 @@ void setup() {
     Serial.printf("MAC Address = %02x:%02x:%02x:%02x:%02x:%02x\n",MAC[0],MAC[1],MAC[2],MAC[3],MAC[4],MAC[5]);
     wake = TimerWakeUp_init();
     #ifdef CAMERA_MODEL_M5STACK_TimerCAM
-        boolean ret = setupTimerCAM(!wake);	// wakeが0のときに時刻をセット
-        if(wake == 0) wake = rtc_wakeup_reason();
+        wake = setupTimerCAM(wake);
     #endif
     if(wake == 0) deepsleep_keepalive(20);
 
