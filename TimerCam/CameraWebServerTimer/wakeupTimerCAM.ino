@@ -6,12 +6,13 @@
     - 改変部の著作権は Wataru KUNINO (bokunimo.net) が所有します。
  *****************************************************************************/
 
-#define CAMERA_LED_GPIO 2
+// #define CAMERA_LED_GPIO 2
 #define BAT_OUTPUT_HOLD_PIN 33
 #define BAT_ADC_PIN 38
 #define Ext_PIN_1 4
 #define Ext_PIN_2 13
 
+#ifdef CAMERA_LED_GPIO
 void led_breathe_test() {
   for (int16_t i = 0; i < 1024; i++) {
     led_brightness(i);
@@ -23,6 +24,7 @@ void led_breathe_test() {
     vTaskDelay(pdMS_TO_TICKS(1));
   }
 }
+#endif
 
 void setupTimerCAM() {
   // Serial.begin(115200);
@@ -30,7 +32,9 @@ void setupTimerCAM() {
   // will hold bat output
   bat_init();
 
-  led_init(CAMERA_LED_GPIO);
+  #ifdef CAMERA_LED_GPIO
+    led_init(CAMERA_LED_GPIO);
+  #endif
   bmm8563_init();
 
   // 5 sec later will wake up
@@ -44,7 +48,9 @@ void setupTimerCAM() {
   // date.minute = 59;
   // date.second = 06;
   // bmm8563_setTime(&date);
-  led_breathe_test();
+  #ifdef CAMERA_LED_GPIO
+    led_breathe_test();
+  #endif
 }
 
 void sleepTimerCAM(uint32_t us) {
