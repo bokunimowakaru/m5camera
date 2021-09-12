@@ -12,6 +12,8 @@
 #define Ext_PIN_1 4
 #define Ext_PIN_2 13
 
+rtc_date_t rtc_cc_date;
+
 #ifdef CAMERA_LED_GPIO
 void led_breathe_test() {
   for (int16_t i = 0; i < 1024; i++) {
@@ -26,7 +28,25 @@ void led_breathe_test() {
 }
 #endif
 
-void setupTimerCAM(boolean set_rtc) {
+unsigned int rtc_date_t2ui(rtc_date_t *date){
+    unsigned int ret = (date->year - 2021);
+    ret = ret * 12 + (date->month - 1);
+    ret = ret * 31 + (date->day - 1);
+    ret = ret * 24 + (date->hour);
+    ret = ret * 60 + (date->minute);
+    ret = ret * 60 + (date->second);
+    return ret;
+}
+
+boolean rtc_wakeup_reason(){
+  rtc_date_t date;
+  bmm8563_getTime(&date);
+  if(rtc_date_t2ui(&date) <= rtc_date_t2ui(&rtc_cc_date) + 10) return 0;
+  return 3;
+}
+
+boolean setupTimerCAM(boolean set_rtc) {
+  boolean ret = false;
   // Serial.begin(115200);
 
   // will hold bat output
@@ -49,32 +69,41 @@ void setupTimerCAM(boolean set_rtc) {
   // date.second = 06;
   // bmm8563_setTime(&date);
   
-  if(set_rtc){
-        Serial.printf("SET_RTC %s %s\n",__DATE__,__TIME__);
-        rtc_date_t date;
-        date.hour = atoi(__TIME__);
-        date.minute = atoi(__TIME__ + 3);
-        date.second = atoi(__TIME__ + 6);
-        date.day = atoi(__DATE__ + 4);
-        date.year = atoi(__DATE__ + 7);
-        const char m_s[12][4]={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
-        int m = 12;
-        for(; m>1; m--){
-            if( strncmp(m_s[m-1], __DATE__, 3) == 0) break;
-        }
-        date.month = m;
-        bmm8563_setTime(&date);
+  rtc_date_t date;
+  bmm8563_getTime(&date);
+  rtc_cc_date.hour = atoi(__TIME__);
+  rtc_cc_date.minute = atoi(__TIME__ + 3);
+  rtc_cc_date.second = atoi(__TIME__ + 6);
+  rtc_cc_date.day = atoi(__DATE__ + 4);
+  rtc_cc_date.year = atoi(__DATE__ + 7);
+  const char m_s[12][4]={"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+  int m = 12;
+  for(; m>1; m--){
+    if( strncmp(m_s[m-1], __DATE__, 3) == 0) break;
+  }
+  rtc_cc_date.month = m;
+  int t = bmm8563_getTimerTime();
+
+  Serial.printf("CC  Time: %d/%d/%d %02d:%02d:%02d\r\n", rtc_cc_date.year, rtc_cc_date.month, rtc_cc_date.day, rtc_cc_date.hour, rtc_cc_date.minute, rtc_cc_date.second);
+  Serial.printf("RTC Time: %d/%d/%d %02d:%02d:%02d\r\n", date.year, date.month, date.day, date.hour, date.minute, date.second);
+  Serial.printf("TimerTime: %d\n",t);
+
+  if(set_rtc || rtc_date_t2ui(&date) <= rtc_date_t2ui(&rtc_cc_date)){
+    Serial.printf("SET_RTC %s %s\n",__DATE__,__TIME__);
+    bmm8563_setTime(&rtc_cc_date);
+    ret = true;
   }
   
   #ifdef CAMERA_LED_GPIO
     led_breathe_test();
   #endif
+  return ret;
 }
 
 void sleepTimerCAM(uint32_t us) {
   rtc_date_t date;
   bmm8563_getTime(&date);
-  Serial.printf("Time: %d/%d/%d %02d:%02d:%-2d\r\n", date.year, date.month, date.day, date.hour, date.minute, date.second);
+  Serial.printf("RTC Time: %d/%d/%d %02d:%02d:%02d\r\n", date.year, date.month, date.day, date.hour, date.minute, date.second);
   Serial.printf("volt: %d mv\r\n", bat_get_voltage());
 
   bmm8563_setTimerIRQ((int)(us / 1000000));

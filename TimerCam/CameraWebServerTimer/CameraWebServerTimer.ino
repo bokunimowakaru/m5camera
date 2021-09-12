@@ -83,7 +83,7 @@
 
 #define SLEEP_P 0ul                         // 無効
 #define SLEEP_WAIT 1.5                      // スリープ待機
-
+#define SLEEP_P 56*1000000ul                     // スリープ時間 56秒
 /******************************************************************************
  コンパイル方法
  ******************************************************************************
@@ -213,11 +213,11 @@ void setup() {
     Serial.println("\nM5Camera started");
     Serial.printf("MAC Address = %02x:%02x:%02x:%02x:%02x:%02x\n",MAC[0],MAC[1],MAC[2],MAC[3],MAC[4],MAC[5]);
     wake = TimerWakeUp_init();
-    if(wake == 0) deepsleep_keepalive(20);
-
     #ifdef CAMERA_MODEL_M5STACK_TimerCAM
-        setupTimerCAM(!wake);	// wakeが0のときに時刻をセット
+        boolean ret = setupTimerCAM(!wake);	// wakeが0のときに時刻をセット
+        if(wake == 0) wake = rtc_wakeup_reason();
     #endif
+    if(wake == 0) deepsleep_keepalive(20);
 
     // LED ON
     if(LED_GPIO_NUM){
@@ -387,7 +387,7 @@ void loop() {
     if(!us) us = 600*1000000ul;         // 10分間
     Serial.printf("Going to sleep for %d seconds in %.1f seconds\n"
         ,(int)(us / 1000000ul),SLEEP_WAIT);
-    if(PWDN_GPIO_NUM < 0) Serial.println(",but the camera module will be eating.");
+    // if(PWDN_GPIO_NUM < 0) Serial.println(",but the camera module will be eating.");
     for(;keepalive < (int)(SLEEP_WAIT * 10); keepalive++){
         Serial.print('.');
         for(int i=0;i<100;i++) delay(1);
