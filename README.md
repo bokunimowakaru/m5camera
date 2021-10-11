@@ -138,7 +138,7 @@ arduino-esp32のバージョンは 2.0.0-alpha1 を使用して動作確認し�
 コンパイル時に必要なライブラリ：  
 * arduino-esp32：https://github.com/espressif/arduino-esp32/releases
 
-Arduino IDFの[ファイル]メニュー⇒[環境設定]のウィンドウ内の「追加のボードマネージャのURL」に、下記を追加してください。
+Arduino IDEの[ファイル]メニュー⇒[環境設定]のウィンドウ内の「追加のボードマネージャのURL」に、下記を追加し、ボードマネージャで esp32 のバージョン 2.0.0を選択してください。
 （すでに他のURLが書かれている場合は、カンマで区切って連結する）  
 
 	https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json
