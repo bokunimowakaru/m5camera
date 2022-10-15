@@ -368,6 +368,6 @@ TTGO T-Camera+M5StackでWi-Fiカメラ
 --------------------------------------------------------------------------------
 # ウェブページ
 
-https://git.bokunimo.com/m5camera/(https://git.bokunimo.com/m5camera/)
+[GitPages : https://git.bokunimo.com/m5camera/](https://git.bokunimo.com/m5camera/)
 
 by <https://bokunimo.net>
