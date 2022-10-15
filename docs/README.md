@@ -107,10 +107,12 @@ CameraWebServer.ino の下記の部分を変更してください。
 	#define CAMERA_MODEL_M5STACK_V2_PSRAM       // [選択例] M5Camera version B
 
 ------------------------------------------------------------------------------------
-# CameraWebServerFTP のコンパイル方法
+# CameraWebServerFTP のコンパイル方法 (TimerCAM は後述)  
+
+	ファイル: CameraWebServer / CameraWebServer.ino  
 
 Arduino IDEに、[arduino-esp32](https://github.com/espressif/arduino-esp32/releases)を組み込んで、コンパイルを行います。arduino-esp32のバージョンは 1.0.4 を使用しました。  
-※ご注意：バージョン1.2.0未満には必要なライブラリが含まれていないので、動作しません。  
+※ご注意：バージョン1.0.2未満には必要なライブラリが含まれていないので、動作しません。  
 
 コンパイル時に必要なライブラリ：  
 * arduino-esp32：https://github.com/espressif/arduino-esp32/releases
@@ -125,6 +127,26 @@ Arduino IDEの[ツール]メニュー⇒[ボード]から、「ESP32 Wrover Modu
 カメラ設定値を SPIFFS に保存する機能を追加しました(2020/10/18)。  
 ブラウザ上の[設定保存]ボタンで設定をSPIFFSに保存します。[設定削除]ボタンで削除することもできます。  
 Partition Schemeでは、上例のように、SPIFFSが利用可能なものを選択してください。  
+
+------------------------------------------------------------------------------------
+# CameraWebServerTimer のコンパイル方法 (M5Stack TimerCAM 専用)  
+
+	ファイル: TimerCam / CameraWebServerTimer / CameraWebServerTimer.ino  
+
+arduino-esp32のバージョンは 2.0.0-alpha1 を使用して動作確認しました。  
+
+コンパイル時に必要なライブラリ：  
+* arduino-esp32：https://github.com/espressif/arduino-esp32/releases
+
+Arduino IDEの[ファイル]メニュー⇒[環境設定]のウィンドウ内の「追加のボードマネージャのURL」に、下記を追加し、ボードマネージャで esp32 のバージョン 2.0.0を選択してください。
+（すでに他のURLが書かれている場合は、カンマで区切って連結する）  
+
+	https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json
+
+Arduino IDEの[ツール]メニュー⇒[ボード]から、[M5Stack-Timer-CAM]を選択してください。  
+
+* Arduino IDE：[ツール]⇒[ボード]⇒[M5Stack-Timer-CAM]
+* PSRAM : Enable
 
 ------------------------------------------------------------------------------------
 # Raspberry Pi用 サーバ
