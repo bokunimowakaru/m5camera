@@ -7,7 +7,10 @@ Wi-Fi 搭載 カメラ M5Camera が顔を検知した時や人感センサ（PIR
 * Espressif Systems の Arduino IDE 用 開発環境（espressif / arduino-esp32, Arduino core for the ESP32 ）に含まれる サンプル・ソフトウェアを基に、改変したものです。  
 * https://github.com/espressif/arduino-esp32/tree/master/libraries/ESP32/examples/Camera/CameraWebServer  
 
-コンパイル済みファームウェアも提供予定です。
+コンパイル方法は下記を参照してください。  
+
+[CameraWebServerFTP のコンパイル方法](#camerawebserverftp-%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E6%96%B9%E6%B3%95-timercam-%E3%81%AF%E5%BE%8C%E8%BF%B0)  
+[CameraWebServerTimer のコンパイル方法](#camerawebservertimer-%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E6%96%B9%E6%B3%95-m5stack-timercam-%E5%B0%82%E7%94%A8)  
 
 ## スマートフォンで動作確認・Raspberry Pi へ FTP 転送
 
