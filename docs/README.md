@@ -7,9 +7,11 @@ Wi-Fi 搭載 カメラ M5Camera が顔を検知した時や人感センサ（PIR
 * Espressif Systems の Arduino IDE 用 開発環境（espressif / arduino-esp32, Arduino core for the ESP32 ）に含まれる サンプル・ソフトウェアを基に、改変したものです。  
 * https://github.com/espressif/arduino-esp32/tree/master/libraries/ESP32/examples/Camera/CameraWebServer  
 
-コンパイル方法は下記を参照してください。  
+ご注意：コンパイル方法は下記を参照してください。※最新のESP32ライブラリには対応していません。  
+This software does not work on the latest ESP32's libraries. Please use Version 1.0.6 for M5Camera, or Version 2.0.0 for Timer Camera X.  
 
 [CameraWebServerFTP のコンパイル方法](#camerawebserverftp-%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E6%96%B9%E6%B3%95-timercam-%E3%81%AF%E5%BE%8C%E8%BF%B0)  
+
 [CameraWebServerTimer のコンパイル方法](#camerawebservertimer-%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E6%96%B9%E6%B3%95-m5stack-timercam-%E5%B0%82%E7%94%A8)  
 
 ## スマートフォンで動作確認・Raspberry Pi へ FTP 転送
@@ -114,11 +116,10 @@ CameraWebServer.ino の下記の部分を変更してください。
 
 	ファイル: CameraWebServer / CameraWebServer.ino  
 
-Arduino IDEに、[arduino-esp32](https://github.com/espressif/arduino-esp32/releases)を組み込んで、コンパイルを行います。arduino-esp32のバージョンは 1.0.4 を使用しました。  
+Arduino IDEに、[arduino-esp32](https://github.com/espressif/arduino-esp32/releases)を組み込んで、コンパイルを行います。arduino-esp32 (Arduinoボードマネージャのボード esp32)のバージョンは 1.0.4 を使用しました。  
 バージョン1.0.4 ～ 1.0.6で動作すると思います。  
-※ご注意：バージョン1.0.2未満には必要なライブラリが含まれていないので、動作しません。  
-　　　　　バージョン2.0.2以降についても必要なライブラリ(顔認識)が含まれていないので、動作しません。  
-　　　　　バージョン2.0.5にてCameraWebServer example fixが行われていますが動作未確認です。  
+※ご注意：バージョン1.0.2未満には必要なライブラリ(顔認識)が含まれていないので、動作しません。  
+　　　　　バージョン2.0.2以降についても必要なライブラリ(顔認識)が変わったため、動作しません。  
 
 コンパイル時に必要なライブラリ：  
 * arduino-esp32：https://github.com/espressif/arduino-esp32/releases
@@ -134,16 +135,19 @@ Arduino IDEの[ツール]メニュー⇒[ボード]から、「ESP32 Wrover Modu
 ブラウザ上の[設定保存]ボタンで設定をSPIFFSに保存します。[設定削除]ボタンで削除することもできます。  
 Partition Schemeでは、上例のように、SPIFFSが利用可能なものを選択してください。  
 
+(参考情報)  
+arduino-esp32のバージョン2.0.5のCameraWebServerには、human_face_detect_msr01(_mnp01).hppを使った顔検知（顔認識）のサンプルが収録されています。  
+当該サンプルを参考にすれば、最新のライブラリで当方が公開するサンプルを動かせると思います。変更点が多いので未だ試していません。  
+
 ------------------------------------------------------------------------------------
 # CameraWebServerTimer のコンパイル方法 (M5Stack TimerCAM 専用)  
 
 	ファイル: TimerCam / CameraWebServerTimer / CameraWebServerTimer.ino  
 
-arduino-esp32 (Arduinoボードマネージャのボード ESP32)のバージョンは 2.0.0-alpha1 を使用して動作確認しました。  
+arduino-esp32 (Arduinoボードマネージャのボード esp32)のバージョンは 2.0.0-alpha1 を使用して動作確認しました。  
 バージョン2.0.0 ～ 2.0.1で動作すると思います。  
-※ご注意：バージョン2.0.0未満には必要なライブラリが含まれていないので、動作しません。  
-　　　　　バージョン2.0.2以降についても必要なライブラリ(顔認識)が含まれていないので、動作しません。  
-　　　　　バージョン2.0.5にてCameraWebServer example fixが行われています(動作未確認)。  
+※ご注意：バージョン2.0.0未満には必要なライブラリ(タイマー機能)が含まれていないので、動作しません。  
+　　　　　バージョン2.0.2以降についても必要なライブラリ(顔認識)が変わったため、動作しません。  
 
 コンパイル時に必要なライブラリ：  
 * arduino-esp32：https://github.com/espressif/arduino-esp32/releases
