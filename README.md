@@ -15,7 +15,7 @@ Wi-Fi 搭載 カメラ M5Camera が顔を検知した時や人感センサ（PIR
 ## スマートフォンで動作確認・Raspberry Pi へ FTP 転送
 
 スマートフォンのブラウザから M5Camera へアクセスし、動作確認が出来ます。
-また、顔検知機能のON/OFFや、人感センサのON/OFF、FTP 送信のON/OFF、LINE 送信のON/OFF、送信間隔などもスマートフォンから行えます。  
+また、顔検知(顔認識)機能のON/OFFや、人感センサのON/OFF、FTP 送信のON/OFF、LINE 送信のON/OFF、送信間隔などもスマートフォンから行えます。  
 
 ![説明図1](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig1.jpg)
 
@@ -115,7 +115,10 @@ CameraWebServer.ino の下記の部分を変更してください。
 	ファイル: CameraWebServer / CameraWebServer.ino  
 
 Arduino IDEに、[arduino-esp32](https://github.com/espressif/arduino-esp32/releases)を組み込んで、コンパイルを行います。arduino-esp32のバージョンは 1.0.4 を使用しました。  
+バージョン1.0.4 ～ 1.0.6で動作すると思います。  
 ※ご注意：バージョン1.0.2未満には必要なライブラリが含まれていないので、動作しません。  
+　　　　　バージョン2.0.2以降についても必要なライブラリ(顔認識)が含まれていないので、動作しません。  
+　　　　　バージョン2.0.5にてCameraWebServer example fixが行われていますが動作未確認です。  
 
 コンパイル時に必要なライブラリ：  
 * arduino-esp32：https://github.com/espressif/arduino-esp32/releases
@@ -137,6 +140,10 @@ Partition Schemeでは、上例のように、SPIFFSが利用可能なものを�
 	ファイル: TimerCam / CameraWebServerTimer / CameraWebServerTimer.ino  
 
 arduino-esp32のバージョンは 2.0.0-alpha1 を使用して動作確認しました。  
+バージョン2.0.0 ～ 2.0.1で動作すると思います。  
+※ご注意：バージョン2.0.0未満には必要なライブラリが含まれていないので、動作しません。  
+　　　　　バージョン2.0.2以降についても必要なライブラリ(顔認識)が含まれていないので、動作しません。  
+　　　　　バージョン2.0.5にてCameraWebServer example fixが行われています(動作未確認)。  
 
 コンパイル時に必要なライブラリ：  
 * arduino-esp32：https://github.com/espressif/arduino-esp32/releases
@@ -170,7 +177,7 @@ Arduino IDEの[ツール]メニュー⇒[ボード]から、[M5Stack-Timer-CAM]�
 ### get_photo
 
 Raspberry Pi などで動作する写真データ取得動作確認用のサーバのサンプル・ソフトウェアです。
-CameraWebServerFTP を書き込んだ M5Camera の電源を入れた時や、一定の周期、顔検知や顔認証センサの検知、人感センサの検知によって送信する UDP の通知を受信し、HTTP で写真を取得し、photo フォルダ内に保存します。  
+CameraWebServerFTP を書き込んだ M5Camera の電源を入れた時や、一定の周期、顔検知(顔認識)や顔認証センサの検知、人感センサの検知によって送信する UDP の通知を受信し、HTTP で写真を取得し、photo フォルダ内に保存します。  
 M5Camera と同じWi-Fiネットワークに接続したRaspberry Piで下記のコマンドを実行するとサーバが起動します。  
 
 	(イントールと get_photo.sh の実行方法)
@@ -187,7 +194,7 @@ M5Camera と同じWi-Fiネットワークに接続したRaspberry Piで下記の
 ### UDP 通知
 
 同じネットワーク内の M5Camera からブロードキャストで UDP 送信することにより、 M5Camera の発見と、イベントなどの通知を行います。  
-CameraWebServerFTP では、ポート1024、先頭8文字にデバイス名「cam_a_5,」を付与したUDPパケットをブロードキャスト送信します。電源投入時や周期的に送信するときはデバイス名のあとに0が付与され、カメラによる顔検知や顔認証が行われたときは、検知・認証回数が付与されます。  
+CameraWebServerFTP では、ポート1024、先頭8文字にデバイス名「cam_a_5,」を付与したUDPパケットをブロードキャスト送信します。電源投入時や周期的に送信するときはデバイス名のあとに0が付与され、カメラによる顔検知(顔認識)や顔認証が行われたときは、検知・認証回数が付与されます。  
 その後に、HTTP プロトコルを使った写真撮影用のコマンドを兼ねた URL が付与されます。  
 人感センサの検知通知はデバイス名「pir_s_5,」が用いられ、人体などの動きを検知したときに1を、動きが無くなったときに0を送信します。
 
