@@ -1,5 +1,5 @@
 # IoT M5Camera with FTP Client for Arduino IDE
-## CameraWebServerFTP forked by bokunimo.net
+## CameraWebServer FTP forked by bokunimo.net
 
 Wi-Fi 搭載 カメラ M5Camera が顔を検知した時や人感センサ（PIR Unit）が人体などの動きを検知したとき、あるいは設定した周期ごとに、写真を撮影し、FTP サーバや、LINE、Windows PC、Raspberry Pi 等へ転送します。  
 
@@ -8,9 +8,9 @@ Wi-Fi 搭載 カメラ M5Camera が顔を検知した時や人感センサ（PIR
 * https://github.com/espressif/arduino-esp32/tree/master/libraries/ESP32/examples/Camera/CameraWebServer  
 
 ご注意：コンパイル方法は下記を参照してください。※最新のESP32ライブラリには対応していません。  
-This software does not work on the latest ESP32's libraries. Please use Version 1.0.6 for M5Camera, or Version 2.0.0 for Timer Camera X.  
+This software does not support the latest ESP32's libraries. Please use Version 1.0.6 for M5Camera, or Version 2.0.0 for Timer Camera X.  
 
-[CameraWebServerFTP のコンパイル方法](#camerawebserverftp-%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E6%96%B9%E6%B3%95-timercam-%E3%81%AF%E5%BE%8C%E8%BF%B0)  
+[CameraWebServer FTP のコンパイル方法](#camerawebserverftp-%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E6%96%B9%E6%B3%95-timercam-%E3%81%AF%E5%BE%8C%E8%BF%B0)  
 
 [CameraWebServerTimer のコンパイル方法](#camerawebservertimer-%E3%81%AE%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E6%96%B9%E6%B3%95-m5stack-timercam-%E5%B0%82%E7%94%A8)  
 
@@ -34,7 +34,7 @@ FTP 送信時は、写真だけでなく、HTMLファイルも転送するので
 ![説明図4](https://github.com/bokunimowakaru/m5camera/blob/image/image/fig4.jpg)
 
 ------------------------------------------------------------------------------------
-# CameraWebServerFTP の動作確認方法
+# CameraWebServer FTP の動作確認方法
 
 本ソフトウェアを書き込んだ M5Camera (または TTGO T-Camera)を 起動すると、約10秒後に Wi-Fi アクセスポイント機能が起動します。スマートフォンまたはパソコンから、下記のSSID（パスワードなし）に接続し、インターネットブラウザでアクセスしてください。画面最下部の［写真撮影］ボタンを押すと、撮影した写真が表示されます。  
 
@@ -46,9 +46,9 @@ FTP 送信時は、写真だけでなく、HTMLファイルも転送するので
 以上だけでは、インターネットやLANへの接続が出来ません。
 より実用的に使用するには、以下の手順で設定の変更を行ってください。  
 
-# CameraWebServerFTP の設定方法
+# CameraWebServer FTP の設定方法
 
-## CameraWebServerFTP のSSIDの設定変更方法
+## CameraWebServer FTP のSSIDの設定変更方法
 
 お手持ちのゲートウェイに接続するには Wi-Fi設定を行う必要があります。設定を変更しなかった場合は、前述の通り、約10秒後に本機が無線アクセスポイントとして動作します。  
 CameraWebServer.ino の下記の部分を変更してください。  
@@ -59,7 +59,7 @@ CameraWebServer.ino の下記の部分を変更してください。
 	#define WIFI_SSID   "1234ABCD"              // your wifi ssid
 	#define WIFI_PASSWD "password"              // your wifi password
 
-## CameraWebServerFTP の FTP クライアント設定方法
+## CameraWebServer FTP の FTP クライアント設定方法
 
 撮影した写真を FTP サーバへ送信することが出来ます。設定しなかった場合は、 FTP による写真転送は行いません。
 FTP サーバへの写真転送機能を使用する場合は、CameraWebServer.ino の下記の部分を変更してください。  
@@ -74,7 +74,7 @@ FTP サーバへの写真転送機能を使用する場合は、CameraWebServer.
 	#define FTP_DIR  "~/"                       // FTP ディレクトリ(Raspberry Pi等)
 	#define Filename "cam_a_5_0000.jpg"         // FTP 保存先のファイル名
 
-## CameraWebServerFTP の LINE Notify 設定方法
+## CameraWebServer FTP の LINE Notify 設定方法
 
 撮影した写真を LINE Notify へ送信することが出来ます。
 CameraWebServer.ino の下記の部分を変更してください。  
@@ -96,7 +96,7 @@ CameraWebServer.ino の下記の部分を変更してください。
 	#define MESSAGE_PIR "人感センサが反応しました。"
 	#define MESSAGE_CAM "カメラが顔を検知しました。"
 
-## CameraWebServerFTP のカメラ選択方法
+## CameraWebServer FTP のカメラ選択方法
 
 使用するカメラを選択し、#defineしてください。初期状態では[選択例] M5Camera version B が選択されています。
 変更する場合は、[選択例]の行に、使用するカメラを定義してください。
@@ -112,7 +112,7 @@ CameraWebServer.ino の下記の部分を変更してください。
 	#define CAMERA_MODEL_M5STACK_V2_PSRAM       // [選択例] M5Camera version B
 
 ------------------------------------------------------------------------------------
-# CameraWebServerFTP のコンパイル方法 (TimerCAM は後述)  
+# CameraWebServer FTP のコンパイル方法 (TimerCAM は後述)  
 
 	ファイル: CameraWebServer / CameraWebServer.ino  
 
@@ -165,7 +165,7 @@ Arduino IDEの[ツール]メニュー⇒[ボード]から、[M5Stack-Timer-CAM]�
 ------------------------------------------------------------------------------------
 # Raspberry Pi用 サーバ
 
-以下の3種類のサーバについて、CameraWebServerFTP との接続動作を確認済みです。実行方法は、後述します。
+以下の3種類のサーバについて、CameraWebServer FTP との接続動作を確認済みです。実行方法は、後述します。
 
 * Raspberry Pi 用 HTTP通信サーバ get_photo.sh  
 	筆者が作成した、写真データ取得動作確認用サーバ
@@ -181,7 +181,7 @@ Arduino IDEの[ツール]メニュー⇒[ボード]から、[M5Stack-Timer-CAM]�
 ### get_photo
 
 Raspberry Pi などで動作する写真データ取得動作確認用のサーバのサンプル・ソフトウェアです。
-CameraWebServerFTP を書き込んだ M5Camera の電源を入れた時や、一定の周期、顔検知(顔認識)や顔認証センサの検知、人感センサの検知によって送信する UDP の通知を受信し、HTTP で写真を取得し、photo フォルダ内に保存します。  
+CameraWebServer FTP を書き込んだ M5Camera の電源を入れた時や、一定の周期、顔検知(顔認識)や顔認証センサの検知、人感センサの検知によって送信する UDP の通知を受信し、HTTP で写真を取得し、photo フォルダ内に保存します。  
 M5Camera と同じWi-Fiネットワークに接続したRaspberry Piで下記のコマンドを実行するとサーバが起動します。  
 
 	(イントールと get_photo.sh の実行方法)
@@ -198,7 +198,7 @@ M5Camera と同じWi-Fiネットワークに接続したRaspberry Piで下記の
 ### UDP 通知
 
 同じネットワーク内の M5Camera からブロードキャストで UDP 送信することにより、 M5Camera の発見と、イベントなどの通知を行います。  
-CameraWebServerFTP では、ポート1024、先頭8文字にデバイス名「cam_a_5,」を付与したUDPパケットをブロードキャスト送信します。電源投入時や周期的に送信するときはデバイス名のあとに0が付与され、カメラによる顔検知(顔認識)や顔認証が行われたときは、検知・認証回数が付与されます。  
+CameraWebServer FTP では、ポート1024、先頭8文字にデバイス名「cam_a_5,」を付与したUDPパケットをブロードキャスト送信します。電源投入時や周期的に送信するときはデバイス名のあとに0が付与され、カメラによる顔検知(顔認識)や顔認証が行われたときは、検知・認証回数が付与されます。  
 その後に、HTTP プロトコルを使った写真撮影用のコマンドを兼ねた URL が付与されます。  
 人感センサの検知通知はデバイス名「pir_s_5,」が用いられ、人体などの動きを検知したときに1を、動きが無くなったときに0を送信します。
 
@@ -213,7 +213,7 @@ get_photo.sh と同じフォルダに格納しました。下記のコマンド�
 	(停止方法)
 	[Ctrl]+[C]
 
-iot-cam_serv.sh が起動した状態で、CameraWebServerFTP を書き込んだ M5Camera の電源を入れてください（または側面のリセットボタンを押す）。このときに、カメラのIPアドレスがサーバへ送信され、それを受信した iot-cam_serv.sh は、以降、人感センサ反応などの通知を受けるたびに、写真を撮影し、Raspberry Piへ保存します。  
+iot-cam_serv.sh が起動した状態で、CameraWebServer FTP を書き込んだ M5Camera の電源を入れてください（または側面のリセットボタンを押す）。このときに、カメラのIPアドレスがサーバへ送信され、それを受信した iot-cam_serv.sh は、以降、人感センサ反応などの通知を受けるたびに、写真を撮影し、Raspberry Piへ保存します。  
 get_photo.sh と同様の理由から、実験が終わったら、[Ctrl]+[C]で停止してください。運用する場合はファイヤーウォールなどを適切に設定して下さい。  
 
 ## Raspberry Pi 用 FTP サーバ vsftpd
