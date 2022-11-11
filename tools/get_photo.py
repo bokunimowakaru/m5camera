@@ -9,8 +9,8 @@
 #                                          Copyright (c) 2016-2021 Wataru KUNINO
 ################################################################################
 
-DEVICE1 = 'cam_a_5'                                     # 配信デバイス名(カメラ)
-DEVICE2 = 'pir_s_5'                                     # 配信デバイス名(人感)
+DEV_CAM = ['cam_a_1','cam_a_2','cam_a_3','cam_a_5']     # 配信デバイス名(カメラ)
+DEV_PIR = ['pir_s_1','pir_s_2','pir_s_3','pir_s_5']     # 配信デバイス名(人感)
 SAVETO  = 'photo'                                       # 保存先フォルダ名
 IP_CAM  = None                                          # カメラのIPアドレス
 PORT    = 1024                                          # UDPポート番号を1024に
@@ -78,14 +78,14 @@ while sock:                                             # 永遠に繰り返す
         continue                                        # whileの先頭に戻る
     device = s[0:7]                                     # 先頭7文字をデバイス名
     value = s.split(',')                                # CSVデータを分割
-    if device == DEVICE1:                               # カメラから受信
+    if device in DEV_CAM:                               # カメラから受信
         if (time.time() - time_start < 300):            # 起動後5分以内
             IP_CAM = udp_from[0]                        # カメラIPアドレスを保持
             print('IP_CAM =',IP_CAM)                    # 表示
         elif IP_CAM != udp_from[0]:                     # アドレス不一致時
             print('起動後5分を経過したので送信先は更新しません')
             continue                                    # whileの先頭に戻る
-    if device == DEVICE1 or device == DEVICE2:          # 対象機器の時
+    if device in DEV_CAM or device in DEV_PIR:          # 対象機器の時
         if IP_CAM is not None:                          # IP_CAMがNoneでは無い時
             date_f = date.strftime('%Y%m%d-%H%M%S')     # ファイル名用の時刻書式
             cam(IP_CAM,'cam_' + date_f + '.jpg')        # 撮影(ファイル保存)
