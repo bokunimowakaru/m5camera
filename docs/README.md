@@ -1,6 +1,7 @@
 # IoT M5Camera with FTP Client for Arduino IDE
 
-This software does not support the latest ESP32's libraries. Please use Version 1.0.6 for M5Camera, or Version 2.0.0 for Timer Camera X.  
+This software, for the Wi-Fi equipped camera product M5Camera, runs when a face is detected, when the M5Stack PIR Unit detects human movement, or at set intervals; the camera takes a photo and then transfers it to a cloud server or an FTP server on the Raspberry Pi.  
+It does not support the latest ESP32's libraries. Please use Version 1.0.6 for M5Camera, or Version 2.0.0 for Timer Camera X.  
 
 ## CameraWebServer FTP forked by bokunimo.net
 
