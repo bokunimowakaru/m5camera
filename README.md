@@ -124,7 +124,12 @@ Arduino IDEに、[arduino-esp32](https://github.com/espressif/arduino-esp32/rele
 　　　　　バージョン2.0.2以降についても必要なライブラリ(顔認識)が変わったため、動作しません。  
 
 コンパイル時に必要なライブラリ：  
-* arduino-esp32：https://github.com/espressif/arduino-esp32/releases
+* arduino-esp32：https://github.com/espressif/arduino-esp32/releases  
+
+Arduino IDEの[ファイル]メニュー⇒[環境設定]のウィンドウ内の「追加のボードマネージャのURL」に、下記を追加し、ボードマネージャで esp32 のバージョン 1.0.4 を選択してください。
+（すでに他のURLが書かれている場合は、カンマで区切って連結する）  
+
+	https://dl.espressif.com/dl/package_esp32_index.json
 
 Arduino IDEの[ツール]メニュー⇒[ボード]から、「ESP32 Wrover Module」を選択してください。  
 フラッシュメモリのスキームで、APP に 3MB以上を割り当てて下さい。  
