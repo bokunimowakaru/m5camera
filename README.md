@@ -155,7 +155,7 @@ arduino-esp32 (Arduinoボードマネージャのボード esp32)のバージョ
 Arduino IDEの[ファイル]メニュー⇒[環境設定]のウィンドウ内の「追加のボードマネージャのURL」に、下記を追加し、ボードマネージャで M5Stack esp32 のバージョン 2.0.0を選択してください。
 （すでに他のURLが書かれている場合は、カンマで区切って連結する）  
 
- 	https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
+	https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
 
 Arduino IDEの[ツール]メニュー⇒[ボード]から、[M5Stack-Timer-CAM]を選択してください。  
 

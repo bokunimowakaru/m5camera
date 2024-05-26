@@ -126,6 +126,11 @@ Arduino IDEに、[arduino-esp32](https://github.com/espressif/arduino-esp32/rele
 コンパイル時に必要なライブラリ：  
 * arduino-esp32：https://github.com/espressif/arduino-esp32/releases
 
+Arduino IDEの[ファイル]メニュー⇒[環境設定]のウィンドウ内の「追加のボードマネージャのURL」に、下記を追加し、ボードマネージャで esp32 のバージョン 1.0.4 ～ 1.0.6 を選択してください。
+（すでに「追加のボードマネージャのURL」に他のURLが書かれている場合は、カンマで区切って連結する）  
+
+	https://dl.espressif.com/dl/package_esp32_index.json
+
 Arduino IDEの[ツール]メニュー⇒[ボード]から、「ESP32 Wrover Module」を選択してください。  
 フラッシュメモリのスキームで、APP に 3MB以上を割り当てて下さい。  
 
@@ -137,10 +142,6 @@ Arduino IDEの[ツール]メニュー⇒[ボード]から、「ESP32 Wrover Modu
 ブラウザ上の[設定保存]ボタンで設定をSPIFFSに保存します。[設定削除]ボタンで削除することもできます。  
 Partition Schemeでは、上例のように、SPIFFSが利用可能なものを選択してください。  
 
-(参考情報)  
-arduino-esp32のバージョン2.0.5のCameraWebServerには、human_face_detect_msr01(_mnp01).hppを使った顔検知（顔認識）のサンプルが収録されています。  
-当該サンプルを参考にすれば、最新のライブラリで当方が公開するサンプルを動かせると思います。変更点が多いので未だ試していません。  
-
 ------------------------------------------------------------------------------------
 # CameraWebServerTimer のコンパイル方法 (M5Stack TimerCAM 専用)  
 
@@ -151,13 +152,10 @@ arduino-esp32 (Arduinoボードマネージャのボード esp32)のバージョ
 ※ご注意：バージョン2.0.0未満には必要なライブラリ(タイマー機能)が含まれていないので、動作しません。  
 　　　　　バージョン2.0.2以降についても必要なライブラリ(顔認識)が変わったため、動作しません。  
 
-コンパイル時に必要なライブラリ：  
-* arduino-esp32：https://github.com/espressif/arduino-esp32/releases
-
-Arduino IDEの[ファイル]メニュー⇒[環境設定]のウィンドウ内の「追加のボードマネージャのURL」に、下記を追加し、ボードマネージャで esp32 のバージョン 2.0.0を選択してください。
+Arduino IDEの[ファイル]メニュー⇒[環境設定]のウィンドウ内の「追加のボードマネージャのURL」に、下記を追加し、ボードマネージャで M5Stack esp32 のバージョン 2.0.0を選択してください。
 （すでに他のURLが書かれている場合は、カンマで区切って連結する）  
 
-	https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json
+	https://m5stack.oss-cn-shenzhen.aliyuncs.com/resource/arduino/package_m5stack_index.json
 
 Arduino IDEの[ツール]メニュー⇒[ボード]から、[M5Stack-Timer-CAM]を選択してください。  
 
